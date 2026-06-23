@@ -4,10 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev:clean": "rm -rf .next && next dev",
     "build": "next build",
     "start": "next start",
-    "preview": "npm run build && next start -H 127.0.0.1 -p 3456",
     "lint": "eslint"
   },
   "dependencies": {
