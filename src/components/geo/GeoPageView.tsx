@@ -57,7 +57,7 @@ export default function GeoPageView({ page }: Props) {
 
           {page.slug === "turkiye-leading-construction-materials-exporter" && (
             <div className="mt-10 -mx-2">
-              <ExportRankings compact />
+              <ExportRankings />
             </div>
           )}
 
