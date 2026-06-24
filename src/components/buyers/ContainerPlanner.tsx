@@ -5,9 +5,11 @@ import {
   PLANNER_PRESETS,
   PLANNER_UNITS,
   ROUGH_ESTIMATE_DISCLAIMER,
+  MAX_CONTAINER_PAYLOAD_KG,
+  TAIL_20DC_MAX_CBM,
   buildRfqSummaryFromPlan,
+  formatFclBreakdown,
   getCategoryOptions,
-  getRoughFclLabel,
   newLineItem,
   planContainers,
   type ContainerPlanResult,
@@ -45,8 +47,14 @@ function PlanResults({ plan }: { plan: ContainerPlanResult }) {
       <div className="rounded-2xl border border-accent/20 bg-accent/5 p-5">
         <p className="text-sm font-semibold text-accent-light">Rough cargo estimate</p>
         <p className="mt-1 text-sm text-muted">
-          {getRoughFclLabel(plan.containers.length)} · ~{plan.totals.cbm} CBM · ~
+          {formatFclBreakdown(plan.estimate)} · ~{plan.totals.cbm} CBM · ~
           {plan.totals.weightKg.toLocaleString()} kg total
+        </p>
+        <p className="mt-2 text-xs text-muted">
+          By volume (40′ HC): ~{plan.estimate.containersByVolume} · By weight (
+          {MAX_CONTAINER_PAYLOAD_KG.toLocaleString()} kg max): ~{plan.estimate.containersByWeight}
+          {plan.estimate.n20dc > 0 &&
+            ` · Tail under ${TAIL_20DC_MAX_CBM} CBM → ${plan.estimate.n20dc} × 20′ DC`}
         </p>
         <p className="mt-3 text-xs text-muted leading-relaxed">{ROUGH_ESTIMATE_DISCLAIMER}</p>
       </div>
@@ -159,7 +167,7 @@ export default function ContainerPlanner({ onContinue }: Props) {
 
   function handleContinue() {
     const activePlan = plan ?? planContainers(lines);
-    if (activePlan.containers.length === 0) return;
+    if (activePlan.estimate.fclCount === 0) return;
     const summary = buildRfqSummaryFromPlan(lines, activePlan, destination, incoterm);
     onContinue(summary);
   }

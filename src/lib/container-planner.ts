@@ -52,12 +52,38 @@ export type ContainerPlanResult = {
   unassigned: EstimatedCargo[];
   globalWarnings: string[];
   totals: { cbm: number; weightKg: number; lineCount: number };
+  estimate: {
+    fclCount: number;
+    n40hc: number;
+    n20dc: number;
+    limitingFactor: "weight" | "volume";
+    containersByWeight: number;
+    containersByVolume: number;
+    spec: ContainerSpec;
+  };
+};
+
+export const MAX_CONTAINER_PAYLOAD_KG = 27_000;
+export const TAIL_20DC_MAX_CBM = 32;
+
+export const SPEC_20DC: ContainerSpec = {
+  id: "20ft",
+  label: "20′ DC",
+  maxCbm: TAIL_20DC_MAX_CBM,
+  maxPayloadKg: MAX_CONTAINER_PAYLOAD_KG,
+};
+
+export const SPEC_40HC: ContainerSpec = {
+  id: "40hc",
+  label: "40′ High Cube",
+  maxCbm: 76,
+  maxPayloadKg: MAX_CONTAINER_PAYLOAD_KG,
 };
 
 export const CONTAINER_SPECS: ContainerSpec[] = [
-  { id: "20ft", label: "20′ Standard", maxCbm: 28, maxPayloadKg: 21_700 },
-  { id: "40ft", label: "40′ Standard", maxCbm: 58, maxPayloadKg: 26_500 },
-  { id: "40hc", label: "40′ High Cube", maxCbm: 76, maxPayloadKg: 26_500 },
+  SPEC_20DC,
+  { id: "40ft", label: "40′ Standard", maxCbm: 58, maxPayloadKg: MAX_CONTAINER_PAYLOAD_KG },
+  SPEC_40HC,
 ];
 
 const CATEGORY_CARGO_PROFILE: Record<
@@ -184,19 +210,158 @@ function canMix(a: HandlingGroup, b: HandlingGroup): string | null {
   return null;
 }
 
-function fitsInContainer(
-  cargo: EstimatedCargo,
-  usedCbm: number,
-  usedWeightKg: number,
-  spec: ContainerSpec,
-): boolean {
-  return usedCbm + cargo.cbm <= spec.maxCbm && usedWeightKg + cargo.weightKg <= spec.maxPayloadKg;
+function qualifiesFor20Dc(cbm: number, weightKg: number): boolean {
+  return cbm < TAIL_20DC_MAX_CBM && weightKg < MAX_CONTAINER_PAYLOAD_KG;
 }
 
-function pickContainerType(totalCbm: number, totalWeightKg: number): ContainerSpec {
-  if (totalCbm <= 28 && totalWeightKg <= 21_700) return CONTAINER_SPECS[0];
-  if (totalCbm <= 58 && totalWeightKg <= 26_500) return CONTAINER_SPECS[1];
-  return CONTAINER_SPECS[2];
+function needsFull40Hc(cbm: number, weightKg: number): boolean {
+  return cbm >= TAIL_20DC_MAX_CBM || weightKg >= MAX_CONTAINER_PAYLOAD_KG;
+}
+
+function resolveContainerSpec(usedCbm: number, usedWeightKg: number): ContainerSpec {
+  if (qualifiesFor20Dc(usedCbm, usedWeightKg)) return SPEC_20DC;
+  return SPEC_40HC;
+}
+
+function sumCargo(items: EstimatedCargo[]) {
+  return items.reduce(
+    (acc, item) => ({
+      cbm: acc.cbm + item.cbm,
+      weightKg: acc.weightKg + item.weightKg,
+    }),
+    { cbm: 0, weightKg: 0 },
+  );
+}
+
+function buildPlannedContainer(
+  index: number,
+  packed: EstimatedCargo[],
+  spec: ContainerSpec,
+): PlannedContainer {
+  const usedCbm = round2(packed.reduce((sum, item) => sum + item.cbm, 0));
+  const usedWeightKg = round0(packed.reduce((sum, item) => sum + item.weightKg, 0));
+  return {
+    index,
+    type: spec,
+    items: packed,
+    usedCbm,
+    usedWeightKg,
+    cbmUtilization: round2((usedCbm / spec.maxCbm) * 100),
+    weightUtilization: round2((usedWeightKg / spec.maxPayloadKg) * 100),
+    mixWarnings: mixWarningsForItems(packed),
+  };
+}
+
+export function estimateTieredFcl(
+  totalCbm: number,
+  totalWeightKg: number,
+): ContainerPlanResult["estimate"] {
+  let remCbm = totalCbm;
+  let remWeight = totalWeightKg;
+  let n40hc = 0;
+  let n20dc = 0;
+
+  while (needsFull40Hc(remCbm, remWeight)) {
+    n40hc++;
+    const weightShare = remWeight > 0 ? Math.min(1, SPEC_40HC.maxPayloadKg / remWeight) : 1;
+    const cbmShare = remCbm > 0 ? Math.min(1, SPEC_40HC.maxCbm / remCbm) : 1;
+    const share = Math.min(weightShare, cbmShare);
+    if (share <= 0) break;
+    remWeight = round0(remWeight - remWeight * share);
+    remCbm = round2(remCbm - remCbm * share);
+  }
+
+  if (remCbm > 0.01 || remWeight > 0.5) {
+    if (qualifiesFor20Dc(remCbm, remWeight)) {
+      n20dc = 1;
+    } else {
+      n40hc += 1;
+    }
+  }
+
+  const containersByWeight =
+    totalWeightKg > 0 ? Math.ceil(totalWeightKg / MAX_CONTAINER_PAYLOAD_KG) : 0;
+  const containersByVolume = totalCbm > 0 ? Math.ceil(totalCbm / SPEC_40HC.maxCbm) : 0;
+  const limitingFactor =
+    containersByWeight >= containersByVolume ? "weight" : "volume";
+  const fclCount = Math.max(n40hc + n20dc, totalCbm > 0 || totalWeightKg > 0 ? 1 : 0);
+
+  return {
+    fclCount,
+    n40hc,
+    n20dc,
+    limitingFactor,
+    containersByWeight: containersByWeight || (totalWeightKg > 0 ? 1 : 0),
+    containersByVolume: containersByVolume || (totalCbm > 0 ? 1 : 0),
+    spec: SPEC_40HC,
+  };
+}
+
+export function formatFclBreakdown(estimate: ContainerPlanResult["estimate"]): string {
+  const parts: string[] = [];
+  if (estimate.n40hc > 0) {
+    parts.push(`${estimate.n40hc} × 40′ HC`);
+  }
+  if (estimate.n20dc > 0) {
+    parts.push(`${estimate.n20dc} × 20′ DC`);
+  }
+  if (parts.length === 0) return getRoughFclLabel(0);
+  return `~${parts.join(" + ")}`;
+}
+
+function splitIntoChunks(item: EstimatedCargo, spec: ContainerSpec): EstimatedCargo[] {
+  if (item.cbm <= spec.maxCbm && item.weightKg <= spec.maxPayloadKg) {
+    return [item];
+  }
+
+  const chunks: EstimatedCargo[] = [];
+  let remQty = item.quantity;
+  let remCbm = item.cbm;
+  let remWeight = item.weightKg;
+
+  while (remWeight > 0.5 && remCbm > 0.001) {
+    const weightShare = spec.maxPayloadKg / remWeight;
+    const cbmShare = spec.maxCbm / remCbm;
+    const share = Math.min(weightShare, cbmShare, 1);
+
+    const chunkQty = round2(remQty * share);
+    const chunkCbm = round2(remCbm * share);
+    const chunkWeight = round0(remWeight * share);
+
+    if (chunkWeight <= 0 && chunkCbm <= 0) break;
+
+    chunks.push({
+      ...item,
+      lineId: `${item.lineId}-${chunks.length}`,
+      quantity: chunkQty,
+      cbm: chunkCbm,
+      weightKg: chunkWeight,
+    });
+
+    remQty = round2(remQty - chunkQty);
+    remCbm = round2(remCbm - chunkCbm);
+    remWeight = round0(remWeight - chunkWeight);
+  }
+
+  return chunks.length > 0 ? chunks : [item];
+}
+
+function emptyPlanResult(globalWarnings: string[]): ContainerPlanResult {
+  return {
+    containers: [],
+    unassigned: [],
+    globalWarnings,
+    totals: { cbm: 0, weightKg: 0, lineCount: 0 },
+    estimate: {
+      fclCount: 0,
+      n40hc: 0,
+      n20dc: 0,
+      limitingFactor: "volume",
+      containersByWeight: 0,
+      containersByVolume: 0,
+      spec: SPEC_40HC,
+    },
+  };
 }
 
 function mixWarningsForItems(items: EstimatedCargo[]): string[] {
@@ -213,26 +378,15 @@ function mixWarningsForItems(items: EstimatedCargo[]): string[] {
 export function planContainers(lines: PlannerLineItem[]): ContainerPlanResult {
   const globalWarnings: string[] = [];
   if (lines.length === 0) {
-    return {
-      containers: [],
-      unassigned: [],
-      globalWarnings: ["Add at least one product line to plan containers."],
-      totals: { cbm: 0, weightKg: 0, lineCount: 0 },
-    };
+    return emptyPlanResult(["Add at least one product line to plan containers."]);
   }
 
   const cargoItems = lines
     .filter((l) => l.product.trim() && l.quantity > 0)
-    .map(estimateCargo)
-    .sort((a, b) => b.cbm - a.cbm || b.weightKg - a.weightKg);
+    .map(estimateCargo);
 
   if (cargoItems.length === 0) {
-    return {
-      containers: [],
-      unassigned: [],
-      globalWarnings: ["Enter valid quantities for your product lines."],
-      totals: { cbm: 0, weightKg: 0, lineCount: 0 },
-    };
+    return emptyPlanResult(["Enter valid quantities for your product lines."]);
   }
 
   const totals = cargoItems.reduce(
@@ -244,66 +398,84 @@ export function planContainers(lines: PlannerLineItem[]): ContainerPlanResult {
     { cbm: 0, weightKg: 0, lineCount: 0 },
   );
 
+  const estimate = estimateTieredFcl(totals.cbm, totals.weightKg);
+  const packingSpec = SPEC_40HC;
+
   const bulkLines = cargoItems.filter((c) => c.handlingGroup === "bulk");
-  if (bulkLines.some((b) => b.weightKg >= 20_000)) {
+  if (bulkLines.some((b) => b.weightKg >= MAX_CONTAINER_PAYLOAD_KG)) {
     globalWarnings.push(
       "Large bulk cement or aggregate orders may require break-bulk or dedicated bulk vessels — container plan is indicative.",
     );
   }
 
+  if (estimate.limitingFactor === "weight") {
+    globalWarnings.push(
+      `FCL count driven by weight (~${MAX_CONTAINER_PAYLOAD_KG.toLocaleString()} kg max per 40′ HC). Remaining cargo under ${TAIL_20DC_MAX_CBM} CBM and ${MAX_CONTAINER_PAYLOAD_KG.toLocaleString()} kg is estimated as 20′ DC.`,
+    );
+  } else if (estimate.n20dc > 0) {
+    globalWarnings.push(
+      `Tail cargo under ${TAIL_20DC_MAX_CBM} CBM and ${MAX_CONTAINER_PAYLOAD_KG.toLocaleString()} kg estimated as 20′ DC.`,
+    );
+  }
+
+  const chunks = cargoItems
+    .flatMap((item) => splitIntoChunks(item, packingSpec))
+    .sort((a, b) => b.cbm - a.cbm || b.weightKg - a.weightKg);
+
   const containers: PlannedContainer[] = [];
   const unassigned: EstimatedCargo[] = [];
-  const remaining = [...cargoItems];
+  const remaining = [...chunks];
 
   while (remaining.length > 0) {
+    const remTotals = sumCargo(remaining);
+    if (qualifiesFor20Dc(remTotals.cbm, remTotals.weightKg)) {
+      containers.push(
+        buildPlannedContainer(containers.length + 1, [...remaining], SPEC_20DC),
+      );
+      remaining.length = 0;
+      continue;
+    }
+
     const seed = remaining.shift()!;
-    const spec = pickContainerType(seed.cbm, seed.weightKg);
     let usedCbm = seed.cbm;
     let usedWeightKg = seed.weightKg;
     const packed: EstimatedCargo[] = [seed];
 
     for (let i = remaining.length - 1; i >= 0; i--) {
       const candidate = remaining[i];
-      if (fitsInContainer(candidate, usedCbm, usedWeightKg, spec)) {
+      const nextCbm = usedCbm + candidate.cbm;
+      const nextWeight = usedWeightKg + candidate.weightKg;
+      if (nextCbm <= packingSpec.maxCbm && nextWeight <= packingSpec.maxPayloadKg) {
         packed.push(candidate);
-        usedCbm += candidate.cbm;
-        usedWeightKg += candidate.weightKg;
+        usedCbm = nextCbm;
+        usedWeightKg = nextWeight;
         remaining.splice(i, 1);
       }
     }
 
-    if (remaining.length > 0) {
-      const next = remaining[0];
-      const singleSpec = pickContainerType(next.cbm, next.weightKg);
-      if (!fitsInContainer(next, usedCbm, usedWeightKg, spec) && spec.id !== singleSpec.id) {
-        // keep current container; next iteration opens new
-      }
-    }
-
-    const mixWarnings = mixWarningsForItems(packed);
-    containers.push({
-      index: containers.length + 1,
-      type: spec,
-      items: packed,
-      usedCbm: round2(usedCbm),
-      usedWeightKg: round0(usedWeightKg),
-      cbmUtilization: round2((usedCbm / spec.maxCbm) * 100),
-      weightUtilization: round2((usedWeightKg / spec.maxPayloadKg) * 100),
-      mixWarnings,
-    });
+    const spec = resolveContainerSpec(usedCbm, usedWeightKg);
+    containers.push(buildPlannedContainer(containers.length + 1, packed, spec));
   }
 
-  // Second pass: try to merge underutilized containers
+  const n40hc = containers.filter((c) => c.type.id === "40hc").length;
+  const n20dc = containers.filter((c) => c.type.id === "20ft").length;
+  const fclCount = containers.length;
+
   if (containers.length >= 2) {
     const last = containers[containers.length - 1];
-    if (last.cbmUtilization < 45 && last.weightUtilization < 45 && containers.length > 1) {
+    if (
+      last.type.id !== "20ft" &&
+      last.cbmUtilization < 45 &&
+      last.weightUtilization < 45 &&
+      containers.length > 1
+    ) {
       globalWarnings.push(
-        "Last container is lightly loaded — Zerixa may consolidate with other project cargo to optimize freight.",
+        "Last 40′ HC is lightly loaded — Zerixa may consolidate with other project cargo to optimize freight.",
       );
     }
   }
 
-  if (totals.weightKg > CONTAINER_SPECS[2].maxPayloadKg * containers.length * 0.95) {
+  if (totals.weightKg > MAX_CONTAINER_PAYLOAD_KG * fclCount * 0.95) {
     globalWarnings.push("Total weight is high — verify axle and road limits at destination port.");
   }
 
@@ -320,16 +492,35 @@ export function planContainers(lines: PlannerLineItem[]): ContainerPlanResult {
       weightKg: round0(totals.weightKg),
       lineCount: totals.lineCount,
     },
+    estimate: {
+      ...estimate,
+      fclCount,
+      n40hc,
+      n20dc,
+    },
   };
 }
 
 export const ROUGH_ESTIMATE_DISCLAIMER =
   "Rough estimate only (typically ±30–40%). Based on category averages — packaging, dimensions, and stowage will change the final FCL count.";
 
-export function getRoughFclLabel(containerCount: number): string {
+export function getRoughFclLabel(
+  containerCount: number,
+  limitingFactor?: "weight" | "volume",
+): string {
   if (containerCount <= 0) return "FCL count TBD";
-  if (containerCount === 1) return "~1 FCL";
-  return `~${containerCount} FCL (indicative)`;
+  const factor =
+    limitingFactor === "weight"
+      ? "weight-limited"
+      : limitingFactor === "volume"
+        ? "volume-limited"
+        : null;
+  if (containerCount === 1) {
+    return factor ? `~1 FCL (${factor})` : "~1 FCL";
+  }
+  return factor
+    ? `~${containerCount} FCL (${factor})`
+    : `~${containerCount} FCL (indicative)`;
 }
 
 export function formatQuantity(item: EstimatedCargo): string {
@@ -351,7 +542,7 @@ export function buildRfqSummaryFromPlan(
   incoterm?: string,
 ): string {
   const dest = destination?.trim() ? `, ${incoterm ?? "CIF"} ${destination.trim()}` : "";
-  const header = `Multi-product project RFQ — ${getRoughFclLabel(plan.containers.length)}, ${plan.totals.lineCount} product lines${dest}:`;
+  const header = `Multi-product project RFQ — ${formatFclBreakdown(plan.estimate)} (${plan.estimate.limitingFactor}-limited), ${plan.totals.lineCount} product lines${dest}:`;
   const lineText = lines
     .filter((l) => l.product.trim() && l.quantity > 0)
     .map((l) => {
