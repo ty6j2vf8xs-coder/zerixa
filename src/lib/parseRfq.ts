@@ -29,6 +29,7 @@ export type ParsedRfq = {
   category: string | null;
   quantity: string | null;
   specification: string | null;
+  productDetails: string[];
   destination: string | null;
   city: string | null;
   country: CountryOption | null;
@@ -187,38 +188,240 @@ function extractLocations(text: string): {
   return { city, country, destination };
 }
 
-function extractQuantity(text: string): string | null {
-  const patterns = [
-    /(\d[\d,.]*)\s*(?:metric\s+)?(?:tons?|tonnes?|ton|mt|adet)\b/i,
-    /(\d[\d,.]*)\s*(?:kg|kilograms?|kilogram)\b/i,
-    /(\d[\d,.]*)\s*(?:m²|m2|sqm|square\s+meters?|metrekare)\b/i,
-    /(\d[\d,.]*)\s*(?:m³|m3|cubic\s+meters?|metreküp)\b/i,
-    /(\d[\d,.]*)\s*(?:pieces?|units?|containers?|pallets?|slabs?|sheets?)\b/i,
-    /(\d[\d,.]*)\s*x\s*(\d[\d,.]*)\s*(?:cm|mm|m)\b/i,
+const QUANTITY_UNIT_ALIASES =
+  "(?:metric\\s+)?(?:tons?|tonnes?|tonne|ton|mt\\.?|metric\\s+tons?)";
+const KG_ALIASES = "(?:kg|kgs|kilograms?|kilogrammes?)";
+const AREA_ALIASES = "(?:m²|m2|sq\\.?\\s*m(?:eters?|etres?)?|sqm|square\\s+meters?|square\\s+metres?|metrekare)";
+const VOLUME_ALIASES = "(?:m³|m3|cbm|cum|cu\\.?\\s*m(?:eters?|etres?)?|cubic\\s+meters?|cubic\\s+metres?|metreküp)";
+const COUNT_ALIASES =
+  "(?:pieces?|pcs?\\.?|units?|items?|sets?|lots?|adet|birim)";
+const PACK_ALIASES = "(?:pallets?|plts?\\.?|slabs?|sheets?|bags?|big\\s+bags?|sacks?|bundles?|rolls?|boxes?|crates?)";
+const CONTAINER_ALIASES = "(?:containers?|fcl|lcl|teu)";
+
+type QuantityMatch = { raw: string; normalized: string; index: number };
+
+function formatQuantityNumber(value: string): string {
+  return value.replace(/,/g, "").trim();
+}
+
+function extractQuantities(text: string): QuantityMatch[] {
+  const patterns: { regex: RegExp; normalize: (match: RegExpMatchArray) => string }[] = [
+    {
+      regex: new RegExp(`(\\d[\\d,.]*)\\s*${QUANTITY_UNIT_ALIASES}\\b`, "gi"),
+      normalize: (m) => `${formatQuantityNumber(m[1])} MT`,
+    },
+    {
+      regex: /(\d[\d,.]*)(?:MT)\b/g,
+      normalize: (m) => `${formatQuantityNumber(m[1])} MT`,
+    },
+    {
+      regex: new RegExp(`(\\d[\\d,.]*)\\s*${KG_ALIASES}\\b`, "gi"),
+      normalize: (m) => `${formatQuantityNumber(m[1])} kg`,
+    },
+    {
+      regex: new RegExp(`(\\d[\\d,.]*)\\s*${AREA_ALIASES}\\b`, "gi"),
+      normalize: (m) => `${formatQuantityNumber(m[1])} m²`,
+    },
+    {
+      regex: /(\d[\d,.]*)(?:m2|m²|sqm)\b/gi,
+      normalize: (m) => `${formatQuantityNumber(m[1])} m²`,
+    },
+    {
+      regex: new RegExp(`(\\d[\\d,.]*)\\s*${VOLUME_ALIASES}\\b`, "gi"),
+      normalize: (m) => `${formatQuantityNumber(m[1])} m³`,
+    },
+    {
+      regex: /(\d[\d,.]*)(?:m3|m³|cbm)\b/gi,
+      normalize: (m) => `${formatQuantityNumber(m[1])} m³`,
+    },
+    {
+      regex: new RegExp(`(\\d[\\d,.]*)\\s*${COUNT_ALIASES}\\b`, "gi"),
+      normalize: (m) => `${formatQuantityNumber(m[1])} pcs`,
+    },
+    {
+      regex: new RegExp(`(\\d[\\d,.]*)\\s*${PACK_ALIASES}\\b`, "gi"),
+      normalize: (m) => {
+        const unit = m[0].replace(m[1], "").trim().toLowerCase();
+        if (unit.startsWith("pallet") || unit.startsWith("plt")) return `${formatQuantityNumber(m[1])} pallets`;
+        if (unit.includes("bag")) return `${formatQuantityNumber(m[1])} bags`;
+        if (unit.includes("slab")) return `${formatQuantityNumber(m[1])} slabs`;
+        if (unit.includes("sheet")) return `${formatQuantityNumber(m[1])} sheets`;
+        return `${formatQuantityNumber(m[1])} ${unit}`;
+      },
+    },
+    {
+      regex: new RegExp(`(\\d[\\d,.]*)\\s*${CONTAINER_ALIASES}\\b`, "gi"),
+      normalize: (m) => `${formatQuantityNumber(m[1])} containers`,
+    },
+    {
+      regex: /(\d[\d,.]*)\s*x\s*(\d[\d,.]*)\s*(cm|mm|m)\b/gi,
+      normalize: (m) => `${formatQuantityNumber(m[1])} x ${formatQuantityNumber(m[2])} ${m[3]}`,
+    },
+    {
+      regex: /(\d[\d,.]*)\s*(?:cm|mm|m)\s*(?:thick|thickness|kalınlık|kalinlik)\b/gi,
+      normalize: (m) => `${formatQuantityNumber(m[1])} ${m[0].match(/(cm|mm|m)/i)?.[1] ?? "mm"} thick`,
+    },
   ];
-  for (const p of patterns) {
-    const m = text.match(p);
-    if (m) return m[0].trim();
+
+  const matches: QuantityMatch[] = [];
+  const seen = new Set<string>();
+
+  for (const { regex, normalize } of patterns) {
+    for (const match of text.matchAll(regex)) {
+      const normalized = normalize(match);
+      const key = normalized.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      matches.push({
+        raw: match[0].trim(),
+        normalized,
+        index: match.index ?? 0,
+      });
+    }
+  }
+
+  return matches.sort((a, b) => a.index - b.index);
+}
+
+function extractQuantity(text: string): string | null {
+  const matches = extractQuantities(text);
+  return matches[0]?.normalized ?? null;
+}
+
+const PRODUCT_DETAIL_PATTERNS: RegExp[] = [
+  /\bCEM\s*(?:I{1,3}|IV|V)?\s*[\d.]+\s*[A-Z]?\b/gi,
+  /\b(?:OPC|SRC|PPC|GGBS|fly\s+ash)\b/gi,
+  /\bgrade\s*[\dA-Za-z./-]+\b/gi,
+  /\bISO\s*[\d-]+\b/gi,
+  /\bEN\s*[\d-]+\b/gi,
+  /\bASTM\s*[\dA-Z./-]+\b/gi,
+  /\b\d+(?:\.\d+)?\s*(?:mm|cm|m)\s*(?:rebar|bar|diameter|thick(?:ness)?|kalınlık|kalinlik|tile|fayans)?\b/gi,
+  /\b\d+\s*x\s*\d+\s*(?:cm|mm|m)\b/gi,
+  /\b\d+\s*(?:cm|mm|m)\s*(?:thick|thickness|kalınlık|kalinlik)\b/gi,
+  /\b(?:bagged|in\s+bags|big\s+bags?|bulk|loose|palletized|crated|on\s+pallets)\b/gi,
+  /\b(?:galvanized|galvanised|annealed|tempered|laminated|polished|honed|brushed)\b/gi,
+  /\b(?:white\s+cement|sulphate\s+resisting|low\s+alkali|rapid\s+hardening)\b/gi,
+  /\b(?:fe\s*500|fe\s*550|b500b|s235|s275|s355)\b/gi,
+  /\b(?:2\s*cm|3\s*cm|20\s*mm|40\s*mm)\s*(?:slabs?|tiles?)?\b/gi,
+];
+
+function titleCaseDetail(value: string): string {
+  return value
+    .split(/\s+/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ")
+    .replace(/\bCem\b/g, "CEM")
+    .replace(/\bIso\b/g, "ISO")
+    .replace(/\bEn\b/g, "EN")
+    .replace(/\bAstm\b/g, "ASTM")
+    .replace(/\bOpc\b/g, "OPC")
+    .replace(/\bSrc\b/g, "SRC")
+    .replace(/\bFe\b/g, "FE");
+}
+
+function extractProductDetails(text: string, product: string | null): string[] {
+  const details = new Set<string>();
+  const productLower = product?.toLowerCase() ?? "";
+
+  for (const pattern of PRODUCT_DETAIL_PATTERNS) {
+    for (const match of text.matchAll(pattern)) {
+      const detail = match[0].trim().replace(/\s+/g, " ");
+      if (detail.length < 2 || detail.length > 80) continue;
+      if (productLower && productLower.includes(detail.toLowerCase())) continue;
+      details.add(detail.replace(/\s+/g, " "));
+    }
+  }
+
+  const descriptiveChunk = text
+    .split(
+      /\s*(?:,|\||;|\b(?:CIF|FOB|CFR|DDP|EXW)\b|\bpayment\b|\bödeme\b|\bdelivery\b|\bteslimat\b)/i,
+    )[0]
+    ?.trim();
+
+  if (descriptiveChunk && product) {
+    const withoutQty = descriptiveChunk
+      .replace(
+        new RegExp(
+          `\\d[\\d,.\\s]*\\s*(?:${QUANTITY_UNIT_ALIASES}|${KG_ALIASES}|${AREA_ALIASES}|${VOLUME_ALIASES}|${COUNT_ALIASES}|${PACK_ALIASES}|${CONTAINER_ALIASES})\\b`,
+          "gi",
+        ),
+        "",
+      )
+      .replace(new RegExp(product.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"), "")
+      .replace(/\b(?:of|for|and|with)\b/gi, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  const extraPhrases = withoutQty
+      .split(/\s+(?:and|&|\+)\s+|,\s+/i)
+      .map((part) => part.trim())
+      .filter((part) => part.length >= 3 && part.length <= 60);
+
+    for (const phrase of extraPhrases) {
+      if (productLower.includes(phrase.toLowerCase())) continue;
+      if (/^(please|urgent|asap|acil)$/i.test(phrase)) continue;
+      if (/^\d+$/.test(phrase)) continue;
+      if ([...details].some((d) => d.toLowerCase() === phrase.toLowerCase())) continue;
+      details.add(titleCaseDetail(phrase));
+    }
+  }
+
+  return [...details];
+}
+
+function extractSpec(text: string, productDetails: string[]): string | null {
+  const fromDetails = productDetails.find((detail) =>
+    /\b(CEM|ISO|EN|ASTM|grade|\d+\s*x\s*\d+|\d+\s*(?:mm|cm))\b/i.test(detail),
+  );
+  if (fromDetails) return fromDetails;
+
+  for (const pattern of PRODUCT_DETAIL_PATTERNS) {
+    const match = text.match(pattern);
+    if (match) return match[0].trim();
   }
   return null;
 }
 
-function extractSpec(text: string): string | null {
-  const specs = [
-    /\bCEM\s*I?\s*42\.?5\s*R?\b/i,
-    /\bCEM\s*II?\s*42\.?5\b/i,
-    /\b\d+\s*x\s*\d+\s*(?:cm|mm|m)?\b/i,
-    /\b\d+\s*mm\s*(?:rebar|bar|diameter|kalınlık)?\b/i,
-    /\bgrade\s*\d+\b/i,
-    /\bISO\s*\d+/i,
-    /\b\d+\s*cm\s*(?:tile|fayans)?\b/i,
-  ];
-  for (const s of specs) {
-    const m = text.match(s);
-    if (m) return m[0].trim();
+function extractPayment(text: string): ParsedRfq["payment"] | null {
+  if (
+    /\bLC\s*(?:at\s+)?sight\b/i.test(text) ||
+    /\bletter\s+of\s+credit\s+at\s+sight\b/i.test(text) ||
+    /\bakkreditif\b/i.test(text) ||
+    /\b(?:sight\s+)?letter\s+of\s+credit\b/i.test(text)
+  ) {
+    return "LC at sight";
   }
+  if (/\bLC\b/i.test(text)) {
+    return "LC at sight";
+  }
+
+  const ttPatterns = [
+    /\bT\s*\/\s*T\b/i,
+    /\bTT\b/i,
+    /\btelegraphic\s+transfer\b/i,
+    /\bwire\s+transfer\b/i,
+    /\bbank\s+transfer\b/i,
+    /\bswift\s+(?:transfer|payment|wire)\b/i,
+    /\b(?:payment|pay)\s+(?:by|via)\s+(?:wire|bank\s+transfer|tt|t\/t|swift)\b/i,
+    /\b(?:payment|pay)\s+with\s+(?:wire|bank\s+transfer|tt|t\/t|swift)\b/i,
+    /\btransfer\s+by\s+(?:wire|bank|swift)\b/i,
+    /\belectronic\s+(?:wire\s+)?transfer\b/i,
+    /\binternational\s+wire\b/i,
+    /\bhavale\b/i,
+    /\beft\s+transfer\b/i,
+  ];
+
+  if (ttPatterns.some((pattern) => pattern.test(text))) {
+    return "T/T";
+  }
+
   return null;
 }
+
+const QUANTITY_PREFIX_PATTERN = new RegExp(
+  `^\\d[\\d,.\\s]*\\s*(?:${QUANTITY_UNIT_ALIASES}|${KG_ALIASES}|${AREA_ALIASES}|${VOLUME_ALIASES}|${COUNT_ALIASES}|${PACK_ALIASES}|${CONTAINER_ALIASES}|MT|m2|m²|sqm|m3|m³|cbm)(?:\\s+of|\\s+adet)?\\s*`,
+  "i",
+);
 
 /** When no keyword matches, extract the product phrase from free text */
 function extractProductFallback(text: string): { product: string; category: string } | null {
@@ -233,12 +436,9 @@ function extractProductFallback(text: string): { product: string; category: stri
   let candidate = mainPart
     .replace(
       /^(?:i\s+need|we\s+need|looking\s+for|i\s+want|we\s+want|please\s+supply|request(?:ing)?|ihtiyacım|istiyorum|lazım)\s+/i,
-      ""
+      "",
     )
-    .replace(
-      /^\d[\d,.\s]*\s*(?:metric\s+)?(?:tons?|tonnes?|ton|mt|kg|kilograms?|m²|m2|sqm|m³|m3|pieces?|units?|containers?|adet|metrekare|metreküp)?\s*(?:of\s+|adet\s+)?/i,
-      ""
-    )
+    .replace(QUANTITY_PREFIX_PATTERN, "")
     .replace(/\s+(please|urgent|asap|acil)\.?$/i, "")
     .trim();
 
@@ -257,6 +457,7 @@ export function parseRfq(text: string): ParsedRfq {
     category: null,
     quantity: null,
     specification: null,
+    productDetails: [],
     destination: null,
     city: null,
     country: null,
@@ -291,7 +492,8 @@ export function parseRfq(text: string): ParsedRfq {
   }
 
   const quantity = extractQuantity(trimmed);
-  const specification = extractSpec(trimmed);
+  const productDetails = extractProductDetails(trimmed, product);
+  const specification = extractSpec(trimmed, productDetails);
 
   const { city, country, destination } = extractLocations(trimmed);
 
@@ -305,23 +507,7 @@ export function parseRfq(text: string): ParsedRfq {
     incoterms = "CIF";
   }
 
-  let payment: ParsedRfq["payment"] = null;
-  if (
-    /\bLC\s*(?:at\s+)?sight\b/i.test(trimmed) ||
-    /\bletter\s+of\s+credit\s+at\s+sight\b/i.test(trimmed) ||
-    /\bakkreditif\b/i.test(trimmed)
-  ) {
-    payment = "LC at sight";
-  } else if (/\bLC\b/i.test(trimmed)) {
-    payment = "LC at sight";
-  } else if (
-    /\bT\/T\b/i.test(trimmed) ||
-    /\bwire\s+transfer\b/i.test(trimmed) ||
-    /\bbank\s+transfer\b/i.test(trimmed) ||
-    /\bhavale\b/i.test(trimmed)
-  ) {
-    payment = "T/T";
-  }
+  const payment = extractPayment(trimmed);
 
   const documents: string[] = [];
   if (/\bISO\b/i.test(trimmed) || /\bcertificate/i.test(trimmed) || /\bsertifika/i.test(trimmed)) {
@@ -345,6 +531,7 @@ export function parseRfq(text: string): ParsedRfq {
   if (incoterms) fieldCount++;
   if (payment) fieldCount++;
   if (specification) fieldCount++;
+  if (productDetails.length > 0) fieldCount++;
 
   const confidence: ParsedRfq["confidence"] =
     fieldCount >= 4 ? "high" : fieldCount >= 1 ? "medium" : "low";
@@ -354,6 +541,7 @@ export function parseRfq(text: string): ParsedRfq {
     category,
     quantity,
     specification,
+    productDetails,
     destination,
     city,
     country,
@@ -367,8 +555,8 @@ export function parseRfq(text: string): ParsedRfq {
 }
 
 export const RFQ_EXAMPLES = [
-  "500 tons Portland cement CEM I 42.5R, CIF Tripoli, T/T bank transfer",
-  "2000 m² marble slabs 2cm, CIF Dubai, T/T",
-  "Aluminum windows and doors, DDP Germany, T/T",
-  "Facade cladding panels 1500 m², FOB Mersin, T/T",
+  "500 tons Portland cement CEM I 42.5R bagged, CIF Tripoli, wire transfer",
+  "2000 sqm marble slabs 2cm thick, CIF Dubai, TT payment",
+  "Aluminum windows and doors, DDP Germany, bank transfer",
+  "Facade cladding panels 1500 m², FOB Mersin, SWIFT transfer",
 ];

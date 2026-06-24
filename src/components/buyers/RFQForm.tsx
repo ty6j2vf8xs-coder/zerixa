@@ -52,6 +52,13 @@ function ParsedAiChips({ parsed }: { parsed: ParsedRfq }) {
         <AiChip label={parsed.category} />
       )}
       {parsed.quantity && <AiChip label={parsed.quantity} />}
+      {parsed.productDetails.map((detail) => (
+        <AiChip key={detail} label={detail} />
+      ))}
+      {parsed.specification &&
+        !parsed.productDetails.some(
+          (detail) => detail.toLowerCase() === parsed.specification!.toLowerCase(),
+        ) && <AiChip label={parsed.specification} />}
       {parsed.city && <AiChip label={parsed.city} />}
       {parsed.country && <AiChip label={parsed.country} />}
       {!parsed.city && !parsed.country && parsed.destination && (

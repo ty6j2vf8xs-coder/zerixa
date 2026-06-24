@@ -136,6 +136,10 @@ export default function AIFeatures() {
                     { label: "Category", value: parsed.category },
                     { label: "Quantity", value: parsed.quantity },
                     { label: "Specification", value: parsed.specification },
+                    ...parsed.productDetails.map((detail) => ({
+                      label: "Product detail",
+                      value: detail,
+                    })),
                     { label: "City", value: parsed.city },
                     { label: "Country", value: parsed.country },
                     {
@@ -150,7 +154,7 @@ export default function AIFeatures() {
                     (field) =>
                       field.value && (
                         <div
-                          key={field.label}
+                          key={`${field.label}-${field.value}`}
                           className="flex items-start justify-between gap-4 text-sm"
                         >
                           <span className="text-muted shrink-0">{field.label}</span>
