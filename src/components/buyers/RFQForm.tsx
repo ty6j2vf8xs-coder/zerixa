@@ -136,7 +136,7 @@ export default function RFQForm() {
           <p className="mt-4 text-muted">
             {step === 1
               ? inputMode === "planner"
-                ? "List your products — we'll estimate rough cargo volume and build one consolidated request."
+                ? "List every product line — we'll build one consolidated request."
                 : "Just describe it — no forms, no jargon."
               : "Where should we send your quote?"}
           </p>

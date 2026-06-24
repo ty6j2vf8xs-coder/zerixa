@@ -535,6 +535,26 @@ export function formatQuantity(item: EstimatedCargo): string {
   return `${item.quantity} ${unitLabel}`;
 }
 
+export function buildRfqSummaryFromLines(
+  lines: PlannerLineItem[],
+  destination?: string,
+  incoterm?: string,
+): string {
+  const validLines = lines.filter((l) => l.product.trim() && l.quantity > 0);
+  if (validLines.length === 0) return "";
+
+  const dest = destination?.trim() ? `, ${incoterm ?? "CIF"} ${destination.trim()}` : "";
+  const header = `Multi-product project RFQ — ${validLines.length} product line${validLines.length > 1 ? "s" : ""}${dest}:`;
+  const lineText = validLines
+    .map((l) => {
+      const unit = l.unit === "tons" ? "MT" : l.unit === "pieces" ? "pcs" : l.unit;
+      return `- ${l.product}: ${l.quantity} ${unit}`;
+    })
+    .join("\n");
+
+  return `${header}\n\nProducts:\n${lineText}\n\nPayment: T/T bank transfer. Please provide consolidated quote.`;
+}
+
 export function buildRfqSummaryFromPlan(
   lines: PlannerLineItem[],
   plan: ContainerPlanResult,
