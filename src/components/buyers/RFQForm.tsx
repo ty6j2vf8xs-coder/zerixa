@@ -14,8 +14,10 @@ import {
   type PaymentOption,
   type CountryOption,
 } from "@/lib/parseRfq";
+import ContainerPlanner from "@/components/buyers/ContainerPlanner";
 
 type Step = 1 | 2;
+type InputMode = "text" | "planner";
 
 const detailFieldClass =
   "w-full h-11 rounded-xl border border-border bg-background px-3 text-sm outline-none transition-colors focus:border-accent/50";
@@ -44,6 +46,7 @@ function AiChip({ label }: { label: string }) {
 
 export default function RFQForm() {
   const [step, setStep] = useState<Step>(1);
+  const [inputMode, setInputMode] = useState<InputMode>("text");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [request, setRequest] = useState("");
@@ -52,6 +55,13 @@ export default function RFQForm() {
   const [delivery, setDelivery] = useState<Incoterm>("CIF");
   const [payment, setPayment] = useState<PaymentOption>("T/T");
   const [country, setCountry] = useState<CountryOption>("Not sure");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("mode") === "planner") {
+      setInputMode("planner");
+    }
+  }, []);
 
   const runParse = useCallback((text: string) => {
     const result = parseRfq(text);
@@ -71,6 +81,12 @@ export default function RFQForm() {
   const canContinue = parsed?.product
     ? request.trim().length >= 5
     : request.trim().length >= 15;
+
+  function handlePlannerContinue(summary: string) {
+    setRequest(summary);
+    runParse(summary);
+    setStep(2);
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -99,7 +115,7 @@ export default function RFQForm() {
 
   return (
     <section id="request-quote" className="border-t border-border bg-surface py-24">
-      <div className="mx-auto max-w-2xl px-6">
+      <div className={`mx-auto px-6 ${step === 1 && inputMode === "planner" ? "max-w-3xl" : "max-w-2xl"}`}>
         <div className="text-center">
           <p className="text-sm font-medium uppercase tracking-widest text-accent">
             Request a Quote
@@ -119,7 +135,9 @@ export default function RFQForm() {
           </h2>
           <p className="mt-4 text-muted">
             {step === 1
-              ? "Just describe it — no forms, no jargon."
+              ? inputMode === "planner"
+                ? "Add every product line — we plan containers and build your RFQ."
+                : "Just describe it — no forms, no jargon."
               : "Where should we send your quote?"}
           </p>
         </div>
@@ -132,6 +150,35 @@ export default function RFQForm() {
 
         {step === 1 ? (
           <div className="mt-10 space-y-5">
+            <div className="flex rounded-xl border border-border bg-background p-1">
+              <button
+                type="button"
+                onClick={() => setInputMode("text")}
+                className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
+                  inputMode === "text"
+                    ? "bg-accent/15 text-accent-light"
+                    : "text-muted hover:text-foreground"
+                }`}
+              >
+                Quick request
+              </button>
+              <button
+                type="button"
+                onClick={() => setInputMode("planner")}
+                className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
+                  inputMode === "planner"
+                    ? "bg-accent/15 text-accent-light"
+                    : "text-muted hover:text-foreground"
+                }`}
+              >
+                Multi-product planner
+              </button>
+            </div>
+
+            {inputMode === "planner" ? (
+              <ContainerPlanner onContinue={handlePlannerContinue} />
+            ) : (
+              <>
             <div>
               <textarea
                 id="request"
@@ -192,6 +239,8 @@ export default function RFQForm() {
               <p className="text-center text-xs text-muted">
                 Add a bit more detail (product, quantity, or destination)
               </p>
+            )}
+              </>
             )}
           </div>
         ) : (

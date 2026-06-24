@@ -8,6 +8,7 @@ import MarketsReach from "@/components/buyers/MarketsReach";
 import ServicePackages from "@/components/buyers/ServicePackages";
 import WhyZerixa from "@/components/buyers/WhyZerixa";
 import BuyerTrust from "@/components/buyers/Trust";
+import ContainerPlannerPromo from "@/components/buyers/ContainerPlannerPromo";
 import RFQForm from "@/components/buyers/RFQForm";
 import BuyerFooter from "@/components/buyers/Footer";
 
@@ -25,6 +26,7 @@ export default function Home() {
         <ServicePackages />
         <WhyZerixa />
         <BuyerTrust />
+        <ContainerPlannerPromo />
         <RFQForm />
       </main>
       <BuyerFooter />
