@@ -37,15 +37,6 @@ export default function BuyerFooter() {
             AI-powered construction materials procurement from Türkiye.
             One partner, full service.
           </p>
-
-          <div className="flex items-center gap-6 text-sm text-muted">
-            <a
-              href="mailto:hello@zerixa.ai"
-              className="hover:text-accent-light transition-colors"
-            >
-              hello@zerixa.ai
-            </a>
-          </div>
         </div>
 
         <div className="mt-8 border-t border-border pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted">

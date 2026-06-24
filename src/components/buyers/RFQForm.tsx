@@ -15,6 +15,7 @@ import {
   type CountryOption,
 } from "@/lib/parseRfq";
 import ContainerPlanner from "@/components/buyers/ContainerPlanner";
+import RfqScorePanel, { RfqWritingGuide } from "@/components/buyers/RfqScorePanel";
 
 type Step = 1 | 2;
 type InputMode = "text" | "planner";
@@ -208,7 +209,9 @@ export default function RFQForm() {
               <ContainerPlanner onContinue={handlePlannerContinue} />
             ) : (
               <>
-            <div>
+            <RfqWritingGuide />
+
+            <div className="relative">
               <textarea
                 id="request"
                 name="request"
@@ -216,10 +219,12 @@ export default function RFQForm() {
                 autoFocus
                 value={request}
                 onChange={(e) => setRequest(e.target.value)}
-                placeholder="Describe your order in your own words…"
+                placeholder="e.g. 500 tons Portland cement CEM I 42.5R bagged, CIF Tripoli, wire transfer"
                 className="w-full rounded-2xl border border-border bg-background px-5 py-4 text-base outline-none transition-colors focus:border-accent/50 resize-none leading-relaxed"
               />
             </div>
+
+            <RfqScorePanel text={request} parsed={parsed} />
 
             <div>
               <p className="mb-2 text-xs text-muted">Try an example:</p>
@@ -259,7 +264,7 @@ export default function RFQForm() {
 
             {!canContinue && request.length > 0 && (
               <p className="text-center text-xs text-muted">
-                Add a bit more detail (product, quantity, or destination)
+                Add product, quantity, or destination to continue
               </p>
             )}
               </>

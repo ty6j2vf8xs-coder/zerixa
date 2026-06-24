@@ -22,11 +22,6 @@ export default function GeoJsonLd({ page }: Props) {
         description:
           "Türkiye-based trading house for construction materials export. Single point of contact for international buyers.",
         areaServed: "Worldwide",
-        contactPoint: {
-          "@type": "ContactPoint",
-          email: "hello@zerixa.ai",
-          contactType: "sales",
-        },
       },
       {
         "@type": "WebPage",

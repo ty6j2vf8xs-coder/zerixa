@@ -14,8 +14,12 @@ type Props = {
   onContinue: (summary: string) => void;
 };
 
-const fieldClass =
-  "w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none transition-colors focus:border-accent/50";
+const inputClass =
+  "box-border w-full h-11 rounded-xl border border-border bg-background px-3 text-sm outline-none transition-colors focus:border-accent/50";
+
+const selectClass = `${inputClass} appearance-none py-0 leading-[2.75rem]`;
+
+const labelClass = "mb-1.5 block text-xs font-medium text-muted";
 
 export default function ContainerPlanner({ onContinue }: Props) {
   const categories = useMemo(() => getCategoryOptions(), []);
@@ -80,10 +84,10 @@ export default function ContainerPlanner({ onContinue }: Props) {
         {lines.map((line, index) => (
           <div
             key={line.id}
-            className="grid gap-3 rounded-2xl border border-border bg-background p-4 sm:grid-cols-12"
+            className="grid gap-3 rounded-2xl border border-border bg-background p-4 sm:grid-cols-12 sm:items-end"
           >
             <div className="sm:col-span-5">
-              <label className="mb-1 block text-xs font-medium text-muted">
+              <label className={labelClass}>
                 Product {index + 1}
               </label>
               <input
@@ -91,15 +95,15 @@ export default function ContainerPlanner({ onContinue }: Props) {
                 value={line.product}
                 onChange={(e) => updateLine(line.id, { product: e.target.value })}
                 placeholder="e.g. Steel rebar, ceramic tiles"
-                className={fieldClass}
+                className={inputClass}
               />
             </div>
             <div className="sm:col-span-3">
-              <label className="mb-1 block text-xs font-medium text-muted">Category</label>
+              <label className={labelClass}>Category</label>
               <select
                 value={line.categorySlug}
                 onChange={(e) => updateLine(line.id, { categorySlug: e.target.value })}
-                className={fieldClass}
+                className={selectClass}
               >
                 {categories.map((c) => (
                   <option key={c.slug} value={c.slug}>
@@ -109,7 +113,7 @@ export default function ContainerPlanner({ onContinue }: Props) {
               </select>
             </div>
             <div className="sm:col-span-2">
-              <label className="mb-1 block text-xs font-medium text-muted">Qty</label>
+              <label className={labelClass}>Qty</label>
               <input
                 type="number"
                 min={0}
@@ -118,18 +122,18 @@ export default function ContainerPlanner({ onContinue }: Props) {
                 onChange={(e) =>
                   updateLine(line.id, { quantity: parseFloat(e.target.value) || 0 })
                 }
-                className={fieldClass}
+                className={`${inputClass} [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
               />
             </div>
-            <div className="sm:col-span-2 flex gap-2">
-              <div className="flex-1">
-                <label className="mb-1 block text-xs font-medium text-muted">Unit</label>
+            <div className="sm:col-span-2">
+              <label className={labelClass}>Unit</label>
+              <div className="flex gap-2">
                 <select
                   value={line.unit}
                   onChange={(e) =>
                     updateLine(line.id, { unit: e.target.value as PlannerLineItem["unit"] })
                   }
-                  className={fieldClass}
+                  className={`${selectClass} min-w-0 flex-1`}
                 >
                   {PLANNER_UNITS.map((u) => (
                     <option key={u.value} value={u.value}>
@@ -137,17 +141,17 @@ export default function ContainerPlanner({ onContinue }: Props) {
                     </option>
                   ))}
                 </select>
+                {lines.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeLine(line.id)}
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border text-sm text-muted transition-colors hover:border-red-500/40 hover:text-red-400"
+                    aria-label="Remove line"
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
-              {lines.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => removeLine(line.id)}
-                  className="mt-6 shrink-0 rounded-lg border border-border px-2 text-xs text-muted hover:border-red-500/40 hover:text-red-400"
-                  aria-label="Remove line"
-                >
-                  ✕
-                </button>
-              )}
             </div>
           </div>
         ))}
@@ -161,9 +165,9 @@ export default function ContainerPlanner({ onContinue }: Props) {
         + Add product line
       </button>
 
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-3 sm:items-end">
         <div className="sm:col-span-2">
-          <label className="mb-1 block text-xs font-medium text-muted">
+          <label className={labelClass}>
             Destination port or country (optional)
           </label>
           <input
@@ -171,15 +175,15 @@ export default function ContainerPlanner({ onContinue }: Props) {
             value={destination}
             onChange={(e) => setDestination(e.target.value)}
             placeholder="e.g. Tripoli, Jeddah, Hamburg"
-            className={fieldClass}
+            className={inputClass}
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-muted">Incoterm</label>
+          <label className={labelClass}>Incoterm</label>
           <select
             value={incoterm}
             onChange={(e) => setIncoterm(e.target.value)}
-            className={fieldClass}
+            className={selectClass}
           >
             {["CIF", "CFR", "FOB", "DDP", "EXW"].map((term) => (
               <option key={term} value={term}>
