@@ -60,11 +60,19 @@ function ParsedAiChips({ parsed }: { parsed: ParsedRfq }) {
         !parsed.productDetails.some(
           (detail) => detail.toLowerCase() === parsed.specification!.toLowerCase(),
         ) && <AiChip label={parsed.specification} />}
-      {parsed.city && <AiChip label={parsed.city} />}
-      {parsed.country && <AiChip label={parsed.country} />}
-      {!parsed.city && !parsed.country && parsed.destination && (
-        <AiChip label={parsed.destination} />
+      {parsed.loadingPort && (
+        <AiChip label={`${parsed.loadingPort} (loading)`} />
       )}
+      {parsed.buyerCity && <AiChip label={parsed.buyerCity} />}
+      {parsed.buyerCountry && <AiChip label={`Buyer: ${parsed.buyerCountry}`} />}
+      {!parsed.loadingPort && parsed.city && <AiChip label={parsed.city} />}
+      {!parsed.buyerCountry && parsed.country && parsed.country !== "Türkiye" && (
+        <AiChip label={parsed.country} />
+      )}
+      {!parsed.city &&
+        !parsed.country &&
+        !parsed.buyerCountry &&
+        parsed.destination && <AiChip label={parsed.destination} />}
       {parsed.incoterms && <AiChip label={parsed.incoterms} />}
       {parsed.payment && <AiChip label={formatPaymentLabel(parsed.payment)} />}
     </>
@@ -93,10 +101,13 @@ export default function RFQForm() {
   const runParse = useCallback((text: string) => {
     const result = parseRfq(text);
     setParsed(result.fieldCount > 0 ? result : null);
-    if (result.destination) {
+    if (result.buyerCountry) {
+      setCountry(result.buyerCountry);
+    } else if (result.country && result.country !== "Türkiye") {
+      setCountry(result.country);
+    } else if (result.destination && !result.needsBuyerDestination) {
       setCountry(matchCountryFromDestination(result.destination));
     }
-    if (result.country) setCountry(result.country);
     if (result.incoterms) setDelivery(mapDelivery(result.incoterms));
     if (result.payment) setPayment(mapPayment(result.payment));
   }, []);
@@ -106,11 +117,13 @@ export default function RFQForm() {
     return () => clearTimeout(timer);
   }, [request, runParse]);
 
-  const canContinue = parsed?.product
-    ? request.trim().length >= 5
-    : parsed?.city || parsed?.country || parsed?.destination
+  const canContinue =
+    !parsed?.needsBuyerDestination &&
+    (parsed?.product
       ? request.trim().length >= 5
-      : request.trim().length >= 15;
+      : parsed?.city || parsed?.country || parsed?.destination || parsed?.buyerCountry
+        ? request.trim().length >= 5
+        : request.trim().length >= 15);
 
   function handlePlannerContinue(summary: string) {
     setRequest(summary);
@@ -264,7 +277,9 @@ export default function RFQForm() {
 
             {!canContinue && request.length > 0 && (
               <p className="text-center text-xs text-muted">
-                Add product, quantity, or destination to continue
+                {parsed?.needsBuyerDestination
+                  ? "EXW/FOB with a Turkish port — add your country (e.g. buyer in Libya)"
+                  : "Add product, quantity, or destination to continue"}
               </p>
             )}
               </>

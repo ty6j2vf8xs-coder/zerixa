@@ -96,6 +96,10 @@ export function RfqWritingGuide() {
         <span className="text-foreground/80">
           &ldquo;500 tons cement CEM I 42.5R, CIF Tripoli, wire transfer&rdquo;
         </span>
+        {" "}or for FOB/EXW:{" "}
+        <span className="text-foreground/80">
+          &ldquo;FOB Mersin, buyer in Libya&rdquo;
+        </span>
       </p>
     </div>
   );

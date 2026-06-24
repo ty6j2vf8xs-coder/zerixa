@@ -539,11 +539,23 @@ export function buildRfqSummaryFromLines(
   lines: PlannerLineItem[],
   destination?: string,
   incoterm?: string,
+  buyerCountry?: string,
 ): string {
   const validLines = lines.filter((l) => l.product.trim() && l.quantity > 0);
   if (validLines.length === 0) return "";
 
-  const dest = destination?.trim() ? `, ${incoterm ?? "CIF"} ${destination.trim()}` : "";
+  const term = incoterm ?? "CIF";
+  let dest = "";
+  if (term === "EXW" || term === "FOB") {
+    const port = destination?.trim() || "Turkish port";
+    const buyer = buyerCountry?.trim();
+    dest = buyer
+      ? `, ${term} ${port}, buyer in ${buyer}`
+      : `, ${term} ${port}`;
+  } else if (destination?.trim()) {
+    dest = `, ${term} ${destination.trim()}`;
+  }
+
   const header = `Multi-product project RFQ — ${validLines.length} product line${validLines.length > 1 ? "s" : ""}${dest}:`;
   const lineText = validLines
     .map((l) => {

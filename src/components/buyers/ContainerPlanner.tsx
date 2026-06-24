@@ -28,7 +28,10 @@ export default function ContainerPlanner({ onContinue }: Props) {
     newLineItem({ product: "Ceramic floor tiles", categorySlug: "flooring-materials", quantity: 800, unit: "m²" }),
   ]);
   const [destination, setDestination] = useState("");
+  const [buyerCountry, setBuyerCountry] = useState("");
   const [incoterm, setIncoterm] = useState("CIF");
+
+  const isExwFob = incoterm === "EXW" || incoterm === "FOB";
 
   function updateLine(id: string, patch: Partial<PlannerLineItem>) {
     setLines((prev) => prev.map((l) => (l.id === id ? { ...l, ...patch } : l)));
@@ -48,12 +51,19 @@ export default function ContainerPlanner({ onContinue }: Props) {
   }
 
   function handleContinue() {
-    const summary = buildRfqSummaryFromLines(lines, destination, incoterm);
+    const summary = buildRfqSummaryFromLines(
+      lines,
+      destination,
+      incoterm,
+      isExwFob ? buyerCountry : undefined,
+    );
     if (!summary) return;
     onContinue(summary);
   }
 
-  const canContinue = lines.some((l) => l.product.trim() && l.quantity > 0);
+  const canContinue =
+    lines.some((l) => l.product.trim() && l.quantity > 0) &&
+    (!isExwFob || buyerCountry.trim().length >= 2);
 
   return (
     <div className="space-y-6">
@@ -166,18 +176,45 @@ export default function ContainerPlanner({ onContinue }: Props) {
       </button>
 
       <div className="grid gap-3 sm:grid-cols-3 sm:items-end">
-        <div className="sm:col-span-2">
-          <label className={labelClass}>
-            Destination port or country (optional)
-          </label>
-          <input
-            type="text"
-            value={destination}
-            onChange={(e) => setDestination(e.target.value)}
-            placeholder="e.g. Tripoli, Jeddah, Hamburg"
-            className={inputClass}
-          />
-        </div>
+        {isExwFob ? (
+          <>
+            <div>
+              <label className={labelClass}>Loading port in Türkiye</label>
+              <input
+                type="text"
+                value={destination}
+                onChange={(e) => setDestination(e.target.value)}
+                placeholder="e.g. Mersin, İzmir, Ambarlı"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>
+                Your country <span className="text-accent">*</span>
+              </label>
+              <input
+                type="text"
+                value={buyerCountry}
+                onChange={(e) => setBuyerCountry(e.target.value)}
+                placeholder="e.g. Libya, Germany, UAE"
+                className={inputClass}
+              />
+            </div>
+          </>
+        ) : (
+          <div className="sm:col-span-2">
+            <label className={labelClass}>
+              Destination port or country (optional)
+            </label>
+            <input
+              type="text"
+              value={destination}
+              onChange={(e) => setDestination(e.target.value)}
+              placeholder="e.g. Tripoli, Jeddah, Hamburg"
+              className={inputClass}
+            />
+          </div>
+        )}
         <div>
           <label className={labelClass}>Incoterm</label>
           <select
@@ -194,6 +231,13 @@ export default function ContainerPlanner({ onContinue }: Props) {
         </div>
       </div>
 
+      {isExwFob && (
+        <p className="text-xs text-muted leading-relaxed">
+          EXW/FOB names the Turkish loading point — please tell us your country so we
+          know where the request comes from.
+        </p>
+      )}
+
       <button
         type="button"
         disabled={!canContinue}
@@ -202,6 +246,12 @@ export default function ContainerPlanner({ onContinue }: Props) {
       >
         Continue with consolidated RFQ
       </button>
+
+      {!canContinue && isExwFob && lines.some((l) => l.product.trim() && l.quantity > 0) && (
+        <p className="text-center text-xs text-muted">
+          Add your country to continue (e.g. Libya, Germany, UAE)
+        </p>
+      )}
     </div>
   );
 }

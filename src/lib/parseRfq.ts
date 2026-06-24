@@ -33,6 +33,10 @@ export type ParsedRfq = {
   destination: string | null;
   city: string | null;
   country: CountryOption | null;
+  loadingPort: string | null;
+  buyerCity: string | null;
+  buyerCountry: CountryOption | null;
+  needsBuyerDestination: boolean;
   incoterms: Incoterm | null;
   payment: ParsedPayment | null;
   documents: string[];
@@ -101,6 +105,25 @@ const PORT_CITIES: { pattern: RegExp; city: string; country: CountryOption }[] =
   { pattern: /\btunis\b/i, city: "Tunis", country: "Tunisia" },
 ];
 
+const TURKISH_EXPORT_PORTS = PORT_CITIES.filter((entry) => entry.country === "Türkiye");
+
+export function isTurkishLoadingLocation(
+  city: string | null,
+  country: CountryOption | null,
+): boolean {
+  if (country === "Türkiye") return true;
+  if (!city) return false;
+  return TURKISH_EXPORT_PORTS.some((entry) => entry.city === city);
+}
+
+export function hasEffectiveBuyerDestination(parsed: ParsedRfq): boolean {
+  if (parsed.buyerCountry || parsed.buyerCity) return true;
+  if (parsed.needsBuyerDestination) return false;
+  if (parsed.country && parsed.country !== "Türkiye") return true;
+  if (parsed.city && !isTurkishLoadingLocation(parsed.city, parsed.country)) return true;
+  return Boolean(parsed.destination) && !isTurkishLoadingLocation(parsed.city, parsed.country);
+}
+
 function cleanLocationPhrase(value: string): string {
   return value
     .replace(/\s+/g, " ")
@@ -131,6 +154,88 @@ function matchPortCity(text: string): { city: string; country: CountryOption } |
     }
   }
   return null;
+}
+
+function findForeignCountriesInText(text: string): CountryOption[] {
+  const found: CountryOption[] = [];
+  const seen = new Set<string>();
+
+  const addCountry = (country: CountryOption | null) => {
+    if (!country || country === "Türkiye" || seen.has(country)) return;
+    seen.add(country);
+    found.push(country);
+  };
+
+  const lower = text.toLowerCase();
+  for (const entry of PORT_CITIES) {
+    if (entry.country !== "Türkiye" && entry.pattern.test(lower)) {
+      addCountry(entry.country);
+    }
+  }
+
+  const countryMatch = matchCountryFromText(text);
+  if (countryMatch) addCountry(countryMatch);
+
+  const segments = text.split(/[,;|]/);
+  for (const segment of segments) {
+    addCountry(matchCountryFromText(segment));
+    const port = matchPortCity(segment);
+    if (port && port.country !== "Türkiye") addCountry(port.country);
+  }
+
+  return found;
+}
+
+function extractBuyerDestination(
+  text: string,
+  loadingCity: string | null,
+  loadingCountry: CountryOption | null,
+  incoterms: Incoterm | null,
+): { buyerCity: string | null; buyerCountry: CountryOption | null } {
+  if (incoterms !== "EXW" && incoterms !== "FOB") {
+    return { buyerCity: null, buyerCountry: null };
+  }
+  if (!isTurkishLoadingLocation(loadingCity, loadingCountry)) {
+    return { buyerCity: null, buyerCountry: null };
+  }
+
+  const explicitPatterns = [
+    /\b(?:buyer|client|customer|company|we(?:'re|\s+are)?)\s+(?:in|from|based\s+in)\s+([A-Za-zÀ-ÿİıÖöÜüŞşÇçĞğ][A-Za-zÀ-ÿİıÖöÜüŞşÇçĞğ\s.'-]{1,40})/i,
+    /\bproject\s+in\s+([A-Za-zÀ-ÿİıÖöÜüŞşÇçĞğ][A-Za-zÀ-ÿİıÖöÜüŞşÇçĞğ\s.'-]{1,40})/i,
+    /\bdestination[:\s]+([A-Za-zÀ-ÿİıÖöÜüŞşÇçĞğ][A-Za-zÀ-ÿİıÖöÜüŞşÇçĞğ\s.'-]{1,40})/i,
+    /\b(?:import(?:ing)?\s+for|deliver(?:y)?\s+to|ship(?:ping)?\s+to)\s+([A-Za-zÀ-ÿİıÖöÜüŞşÇçĞğ][A-Za-zÀ-ÿİıÖöÜüŞşÇçĞğ\s.'-]{1,40})/i,
+  ];
+
+  for (const pattern of explicitPatterns) {
+    const match = text.match(pattern);
+    if (!match) continue;
+    const phrase = cleanLocationPhrase(match[1]);
+    const country = matchCountryFromText(phrase);
+    if (country && country !== "Türkiye") {
+      return {
+        buyerCity: phrase.toLowerCase() === country.toLowerCase() ? null : phrase,
+        buyerCountry: country,
+      };
+    }
+    const port = matchPortCity(phrase);
+    if (port && port.country !== "Türkiye") {
+      return { buyerCity: port.city, buyerCountry: port.country };
+    }
+  }
+
+  for (const entry of PORT_CITIES) {
+    if (entry.country === "Türkiye") continue;
+    if (!entry.pattern.test(text)) continue;
+    if (loadingCity && entry.city === loadingCity) continue;
+    return { buyerCity: entry.city, buyerCountry: entry.country };
+  }
+
+  const foreignCountries = findForeignCountriesInText(text);
+  if (foreignCountries.length > 0) {
+    return { buyerCity: null, buyerCountry: foreignCountries[0] };
+  }
+
+  return { buyerCity: null, buyerCountry: null };
 }
 
 function extractLocations(text: string): {
@@ -461,6 +566,10 @@ export function parseRfq(text: string): ParsedRfq {
     destination: null,
     city: null,
     country: null,
+    loadingPort: null,
+    buyerCity: null,
+    buyerCountry: null,
+    needsBuyerDestination: false,
     incoterms: null,
     payment: null,
     documents: [],
@@ -509,6 +618,20 @@ export function parseRfq(text: string): ParsedRfq {
 
   const payment = extractPayment(trimmed);
 
+  const isTurkishLoad = isTurkishLoadingLocation(city, country);
+  const loadingPort = isTurkishLoad && (incoterms === "EXW" || incoterms === "FOB") ? city : null;
+  const { buyerCity, buyerCountry } = extractBuyerDestination(
+    trimmed,
+    city,
+    country,
+    incoterms,
+  );
+  const needsBuyerDestination =
+    (incoterms === "EXW" || incoterms === "FOB") &&
+    isTurkishLoad &&
+    !buyerCountry &&
+    !buyerCity;
+
   const documents: string[] = [];
   if (/\bISO\b/i.test(trimmed) || /\bcertificate/i.test(trimmed) || /\bsertifika/i.test(trimmed)) {
     documents.push("ISO 9001 Certificate");
@@ -525,16 +648,22 @@ export function parseRfq(text: string): ParsedRfq {
   let fieldCount = 0;
   if (product) fieldCount++;
   if (quantity) fieldCount++;
-  if (city) fieldCount++;
-  if (country) fieldCount++;
-  if (destination && !city && !country) fieldCount++;
+  if (buyerCountry || buyerCity) fieldCount++;
+  else if (country && country !== "Türkiye") fieldCount++;
+  else if (city && !isTurkishLoad) fieldCount++;
+  else if (destination && !isTurkishLoad) fieldCount++;
+  if (loadingPort) fieldCount++;
   if (incoterms) fieldCount++;
   if (payment) fieldCount++;
   if (specification) fieldCount++;
   if (productDetails.length > 0) fieldCount++;
 
   const confidence: ParsedRfq["confidence"] =
-    fieldCount >= 4 ? "high" : fieldCount >= 1 ? "medium" : "low";
+    fieldCount >= 4 && !needsBuyerDestination
+      ? "high"
+      : fieldCount >= 1
+        ? "medium"
+        : "low";
 
   return {
     product,
@@ -545,6 +674,10 @@ export function parseRfq(text: string): ParsedRfq {
     destination,
     city,
     country,
+    loadingPort,
+    buyerCity,
+    buyerCountry,
+    needsBuyerDestination,
     incoterms,
     payment,
     documents,
@@ -558,5 +691,5 @@ export const RFQ_EXAMPLES = [
   "500 tons Portland cement CEM I 42.5R bagged, CIF Tripoli, wire transfer",
   "2000 sqm marble slabs 2cm thick, CIF Dubai, TT payment",
   "Aluminum windows and doors, DDP Germany, bank transfer",
-  "Facade cladding panels 1500 m², FOB Mersin, SWIFT transfer",
+  "Facade cladding panels 1500 m², FOB Mersin, buyer in Libya, SWIFT transfer",
 ];

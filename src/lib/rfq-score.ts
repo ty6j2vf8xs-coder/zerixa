@@ -1,4 +1,5 @@
 import type { ParsedRfq } from "@/lib/parseRfq";
+import { hasEffectiveBuyerDestination } from "@/lib/parseRfq";
 
 export type RfqScoreTier = "draft" | "fair" | "good" | "strong";
 
@@ -55,10 +56,8 @@ function resolveTier(score: number): RfqScoreTier {
 }
 
 export function scoreRfq(parsed: ParsedRfq | null, text: string): RfqScore {
-  const hasDestination =
-    Boolean(parsed?.city) ||
-    Boolean(parsed?.country) ||
-    Boolean(parsed?.destination);
+  const needsBuyerCountry = parsed?.needsBuyerDestination ?? false;
+  const hasDestination = parsed ? hasEffectiveBuyerDestination(parsed) : false;
   const hasSpecs =
     Boolean(parsed?.specification) || (parsed?.productDetails.length ?? 0) > 0;
 
@@ -81,9 +80,13 @@ export function scoreRfq(parsed: ParsedRfq | null, text: string): RfqScore {
     },
     {
       id: "destination",
-      label: "Destination",
-      tip: "Where should it ship?",
-      example: "Tripoli, Jeddah, Hamburg",
+      label: needsBuyerCountry ? "Your country" : "Destination",
+      tip: needsBuyerCountry
+        ? "FOB/EXW names the Turkish loading port — add where you are based"
+        : "Where should it ship?",
+      example: needsBuyerCountry
+        ? "buyer in Libya, based in Germany, project in UAE"
+        : "Tripoli, Jeddah, Hamburg",
       points: 20,
       met: hasDestination,
     },
@@ -122,6 +125,12 @@ export function scoreRfq(parsed: ParsedRfq | null, text: string): RfqScore {
   const missingTips = criteria
     .filter((item) => !item.met)
     .map((item) => `${item.tip} — e.g. ${item.example}`);
+
+  if (needsBuyerCountry) {
+    missingTips.unshift(
+      "For EXW/FOB with a Turkish port, add your country so we know where the request comes from — e.g. buyer in Libya",
+    );
+  }
 
   if (!hasSpecs && score >= 50) {
     missingTips.push(
