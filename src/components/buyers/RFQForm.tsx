@@ -136,7 +136,7 @@ export default function RFQForm() {
           <p className="mt-4 text-muted">
             {step === 1
               ? inputMode === "planner"
-                ? "Add every product line — we plan containers and build your RFQ."
+                ? "List your products — we'll estimate rough cargo volume and build one consolidated request."
                 : "Just describe it — no forms, no jargon."
               : "Where should we send your quote?"}
           </p>
@@ -171,7 +171,7 @@ export default function RFQForm() {
                     : "text-muted hover:text-foreground"
                 }`}
               >
-                Multi-product planner
+                Multi-product RFQ
               </button>
             </div>
 

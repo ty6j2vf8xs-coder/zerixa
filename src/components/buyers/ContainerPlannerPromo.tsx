@@ -7,47 +7,55 @@ export default function ContainerPlannerPromo() {
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div>
             <p className="text-sm font-medium uppercase tracking-widest text-accent">
-              Multi-Product Container Planner
+              Multi-Product RFQ Builder
             </p>
             <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
               One project,{" "}
-              <span className="text-gradient">many products</span> — planned for you
+              <span className="text-gradient">many products</span> — one request
             </h2>
             <p className="mt-4 text-muted leading-relaxed">
               Cement, steel, tiles, windows, insulation — list everything your build needs.
-              Zerixa estimates volume and weight, suggests 20′ / 40′ / 40′ HC container splits,
-              and turns it into one consolidated RFQ.
+              Zerixa estimates rough cargo volume and weight, then builds a single
+              consolidated RFQ for your team to quote.
             </p>
             <ul className="mt-6 space-y-3 text-sm text-muted">
               <li className="flex gap-2">
                 <span className="text-accent">✦</span>
-                Add unlimited product lines with category-aware cargo profiles
+                Add unlimited product lines in one structured request
               </li>
               <li className="flex gap-2">
                 <span className="text-accent">✦</span>
-                See CBM and weight utilization per container before you quote
+                See approximate CBM and weight before you submit
               </li>
               <li className="flex gap-2">
                 <span className="text-accent">✦</span>
-                Mix warnings for bulk vs palletized or crated cargo
+                Final FCL count confirmed by Zerixa after spec review
               </li>
             </ul>
             <Link
               href="/?mode=planner#request-quote"
               className="glow-amber mt-8 inline-flex rounded-xl bg-accent px-6 py-3.5 text-sm font-semibold text-background transition-all hover:bg-accent-light"
             >
-              Plan my containers
+              Build my project RFQ
             </Link>
           </div>
 
           <div className="rounded-2xl border border-accent/20 bg-surface p-6">
             <p className="text-xs font-medium uppercase tracking-wide text-accent">
-              Example load plan
+              Example rough estimate
             </p>
             <div className="mt-4 space-y-3">
               {[
-                { label: "Container 1 · 40′ HC", util: "78% volume", items: "Cement 200 MT · Rebar 80 MT" },
-                { label: "Container 2 · 40′ Standard", util: "71% volume", items: "Ceramic tiles 1,200 m² · Sanitaryware 60 pcs" },
+                {
+                  label: "Illustrative group 1 · 40′ HC",
+                  util: "~78% volume",
+                  items: "Cement 200 MT · Rebar 80 MT",
+                },
+                {
+                  label: "Illustrative group 2 · 40′ Standard",
+                  util: "~71% volume",
+                  items: "Ceramic tiles 1,200 m² · Sanitaryware 60 pcs",
+                },
               ].map((box) => (
                 <div
                   key={box.label}
@@ -64,8 +72,9 @@ export default function ContainerPlannerPromo() {
                 </div>
               ))}
             </div>
-            <p className="mt-4 text-xs text-muted">
-              Indicative stowage — Zerixa confirms final loading with your freight forwarder.
+            <p className="mt-4 text-xs text-muted leading-relaxed">
+              Indicative only (typically ±30–40%). Not a loading plan — Zerixa confirms
+              final FCL count after reviewing packaging and product specs.
             </p>
           </div>
         </div>

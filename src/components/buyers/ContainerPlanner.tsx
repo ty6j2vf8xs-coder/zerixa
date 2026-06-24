@@ -4,8 +4,10 @@ import { useMemo, useState } from "react";
 import {
   PLANNER_PRESETS,
   PLANNER_UNITS,
+  ROUGH_ESTIMATE_DISCLAIMER,
   buildRfqSummaryFromPlan,
   getCategoryOptions,
+  getRoughFclLabel,
   newLineItem,
   planContainers,
   type ContainerPlanResult,
@@ -41,18 +43,25 @@ function PlanResults({ plan }: { plan: ContainerPlanResult }) {
   return (
     <div className="space-y-4">
       <div className="rounded-2xl border border-accent/20 bg-accent/5 p-5">
-        <p className="text-sm font-semibold text-accent-light">Suggested load plan</p>
+        <p className="text-sm font-semibold text-accent-light">Rough cargo estimate</p>
         <p className="mt-1 text-sm text-muted">
-          {plan.containers.length} container{plan.containers.length > 1 ? "s" : ""} ·{" "}
-          {plan.totals.cbm} CBM · {plan.totals.weightKg.toLocaleString()} kg total
+          {getRoughFclLabel(plan.containers.length)} · ~{plan.totals.cbm} CBM · ~
+          {plan.totals.weightKg.toLocaleString()} kg total
         </p>
+        <p className="mt-3 text-xs text-muted leading-relaxed">{ROUGH_ESTIMATE_DISCLAIMER}</p>
       </div>
 
-      {plan.globalWarnings.map((warning) => (
+      {plan.globalWarnings
+        .filter((warning) => warning !== ROUGH_ESTIMATE_DISCLAIMER)
+        .map((warning) => (
         <p key={warning} className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs text-amber-200/90">
           {warning}
         </p>
       ))}
+
+      <p className="text-xs font-medium text-muted">
+        Illustrative groupings below — not a confirmed loading plan:
+      </p>
 
       <div className="grid gap-4">
         {plan.containers.map((container) => (
@@ -63,19 +72,19 @@ function PlanResults({ plan }: { plan: ContainerPlanResult }) {
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-accent">
-                  Container {container.index}
+                  Illustrative group {container.index}
                 </p>
                 <h3 className="mt-1 font-semibold">{container.type.label}</h3>
               </div>
               <p className="text-xs text-muted">
-                {container.usedCbm} / {container.type.maxCbm} CBM ·{" "}
+                ~{container.usedCbm} / {container.type.maxCbm} CBM · ~
                 {container.usedWeightKg.toLocaleString()} / {container.type.maxPayloadKg.toLocaleString()} kg
               </p>
             </div>
 
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <UtilBar label="Volume utilization" value={container.cbmUtilization} />
-              <UtilBar label="Weight utilization" value={container.weightUtilization} />
+              <UtilBar label="Approx. volume fill" value={container.cbmUtilization} />
+              <UtilBar label="Approx. weight fill" value={container.weightUtilization} />
             </div>
 
             <ul className="mt-4 space-y-2">
@@ -106,8 +115,8 @@ function PlanResults({ plan }: { plan: ContainerPlanResult }) {
       </div>
 
       <p className="text-xs text-muted leading-relaxed">
-        Indicative plan for FCL export from Türkiye. Zerixa confirms final stowage,
-        vessel space, and whether consolidation optimizes your freight.
+        Zerixa confirms the final FCL count, stowage, and freight options after reviewing
+        your product specs and packaging.
       </p>
     </div>
   );
@@ -162,9 +171,9 @@ export default function ContainerPlanner({ onContinue }: Props) {
     <div className="space-y-6">
       <div className="rounded-2xl border border-border bg-background p-5">
         <p className="text-sm text-muted leading-relaxed">
-          Add every product your project needs. Zerixa plans how they fit across{" "}
-          <strong className="text-foreground">20′ / 40′ / 40′ HC</strong> containers — one
-          partner, one consolidated quote.
+          List every product your project needs. We&apos;ll estimate rough cargo volume and
+          weight, then turn it into one consolidated RFQ — Zerixa confirms the actual FCL
+          count after reviewing specs and packaging.
         </p>
       </div>
 
@@ -304,7 +313,7 @@ export default function ContainerPlanner({ onContinue }: Props) {
         onClick={handlePlan}
         className="w-full rounded-xl border border-accent/40 bg-accent/10 py-3.5 text-sm font-semibold text-accent-light transition-colors hover:bg-accent/20 disabled:opacity-40"
       >
-        Plan containers
+        Estimate cargo volume
       </button>
 
       {activePlan && <PlanResults plan={activePlan} />}

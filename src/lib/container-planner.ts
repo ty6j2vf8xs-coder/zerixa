@@ -307,6 +307,10 @@ export function planContainers(lines: PlannerLineItem[]): ContainerPlanResult {
     globalWarnings.push("Total weight is high — verify axle and road limits at destination port.");
   }
 
+  if (containers.length > 0) {
+    globalWarnings.unshift(ROUGH_ESTIMATE_DISCLAIMER);
+  }
+
   return {
     containers,
     unassigned,
@@ -317,6 +321,15 @@ export function planContainers(lines: PlannerLineItem[]): ContainerPlanResult {
       lineCount: totals.lineCount,
     },
   };
+}
+
+export const ROUGH_ESTIMATE_DISCLAIMER =
+  "Rough estimate only (typically ±30–40%). Based on category averages — packaging, dimensions, and stowage will change the final FCL count.";
+
+export function getRoughFclLabel(containerCount: number): string {
+  if (containerCount <= 0) return "FCL count TBD";
+  if (containerCount === 1) return "~1 FCL";
+  return `~${containerCount} FCL (indicative)`;
 }
 
 export function formatQuantity(item: EstimatedCargo): string {
@@ -338,7 +351,7 @@ export function buildRfqSummaryFromPlan(
   incoterm?: string,
 ): string {
   const dest = destination?.trim() ? `, ${incoterm ?? "CIF"} ${destination.trim()}` : "";
-  const header = `Multi-product project RFQ — ${plan.containers.length} container(s), ${plan.totals.lineCount} product lines${dest}:`;
+  const header = `Multi-product project RFQ — ${getRoughFclLabel(plan.containers.length)}, ${plan.totals.lineCount} product lines${dest}:`;
   const lineText = lines
     .filter((l) => l.product.trim() && l.quantity > 0)
     .map((l) => {
@@ -351,11 +364,11 @@ export function buildRfqSummaryFromPlan(
   const containerText = plan.containers
     .map(
       (c) =>
-        `Container ${c.index} (${c.type.label}): ${c.items.map((i) => `${i.product} ${formatQuantity(i)}`).join("; ")}`,
+        `Illustrative group ${c.index} (${c.type.label}, ~${c.usedCbm} CBM): ${c.items.map((i) => `${i.product} ${formatQuantity(i)}`).join("; ")}`,
     )
     .join("\n");
 
-  return `${header}\n\nProducts:\n${lineText}\n\nSuggested load plan:\n${containerText}\n\nPayment: T/T bank transfer. Please provide consolidated quote.`;
+  return `${header}\n\nProducts:\n${lineText}\n\nRough cargo estimate (not a loading plan):\n${containerText}\n\nNote: ${ROUGH_ESTIMATE_DISCLAIMER}\n\nPayment: T/T bank transfer. Please provide consolidated quote with confirmed FCL count.`;
 }
 
 export function getCategoryOptions() {
