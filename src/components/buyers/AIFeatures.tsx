@@ -136,7 +136,13 @@ export default function AIFeatures() {
                     { label: "Category", value: parsed.category },
                     { label: "Quantity", value: parsed.quantity },
                     { label: "Specification", value: parsed.specification },
-                    { label: "Destination", value: parsed.destination },
+                    { label: "City", value: parsed.city },
+                    { label: "Country", value: parsed.country },
+                    {
+                      label: "Destination",
+                      value:
+                        !parsed.city && !parsed.country ? parsed.destination : null,
+                    },
                     { label: "Incoterms", value: parsed.incoterms },
                     { label: "Payment", value: parsed.payment ? formatPaymentLabel(parsed.payment) : null },
                     { label: "Lead time", value: parsed.leadTime },

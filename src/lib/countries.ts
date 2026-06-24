@@ -216,6 +216,25 @@ const COUNTRY_ALIASES: Record<string, CountryOption> = {
   "united states of america": "United States",
   turkey: "Türkiye",
   turkiye: "Türkiye",
+  türkiye: "Türkiye",
+  saudi: "Saudi Arabia",
+  "saudi arabia": "Saudi Arabia",
+  libya: "Libya",
+  iraq: "Iraq",
+  egypt: "Egypt",
+  mısır: "Egypt",
+  algeria: "Algeria",
+  cezayir: "Algeria",
+  morocco: "Morocco",
+  fas: "Morocco",
+  germany: "Germany",
+  almanya: "Germany",
+  france: "France",
+  fransa: "France",
+  italy: "Italy",
+  italya: "Italy",
+  spain: "Spain",
+  ispanya: "Spain",
   "ivory coast": "Ivory Coast",
   "cote d'ivoire": "Ivory Coast",
   korea: "South Korea",
@@ -238,6 +257,30 @@ function normalizeCountry(input: string): CountryOption | null {
     (c) => lower.includes(c.toLowerCase()) || c.toLowerCase().includes(lower)
   );
   return partial ?? null;
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** Find the first country name or alias mentioned in free text. */
+export function matchCountryFromText(text: string): CountryOption | null {
+  const lower = text.toLowerCase();
+
+  for (const [alias, country] of Object.entries(COUNTRY_ALIASES)) {
+    if (new RegExp(`\\b${escapeRegExp(alias)}\\b`, "i").test(lower)) {
+      return country;
+    }
+  }
+
+  const sorted = [...COUNTRIES].sort((a, b) => b.length - a.length);
+  for (const country of sorted) {
+    if (new RegExp(`\\b${escapeRegExp(country)}\\b`, "i").test(text)) {
+      return country;
+    }
+  }
+
+  return null;
 }
 
 export function matchCountryFromDestination(destination: string | null): CountryOption {

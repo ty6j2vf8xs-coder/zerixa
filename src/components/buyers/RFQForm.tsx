@@ -44,6 +44,25 @@ function AiChip({ label }: { label: string }) {
   );
 }
 
+function ParsedAiChips({ parsed }: { parsed: ParsedRfq }) {
+  return (
+    <>
+      {parsed.product && <AiChip label={parsed.product} />}
+      {parsed.category && parsed.category !== "Construction materials" && (
+        <AiChip label={parsed.category} />
+      )}
+      {parsed.quantity && <AiChip label={parsed.quantity} />}
+      {parsed.city && <AiChip label={parsed.city} />}
+      {parsed.country && <AiChip label={parsed.country} />}
+      {!parsed.city && !parsed.country && parsed.destination && (
+        <AiChip label={parsed.destination} />
+      )}
+      {parsed.incoterms && <AiChip label={parsed.incoterms} />}
+      {parsed.payment && <AiChip label={formatPaymentLabel(parsed.payment)} />}
+    </>
+  );
+}
+
 export default function RFQForm() {
   const [step, setStep] = useState<Step>(1);
   const [inputMode, setInputMode] = useState<InputMode>("text");
@@ -69,6 +88,7 @@ export default function RFQForm() {
     if (result.destination) {
       setCountry(matchCountryFromDestination(result.destination));
     }
+    if (result.country) setCountry(result.country);
     if (result.incoterms) setDelivery(mapDelivery(result.incoterms));
     if (result.payment) setPayment(mapPayment(result.payment));
   }, []);
@@ -80,7 +100,9 @@ export default function RFQForm() {
 
   const canContinue = parsed?.product
     ? request.trim().length >= 5
-    : request.trim().length >= 15;
+    : parsed?.city || parsed?.country || parsed?.destination
+      ? request.trim().length >= 5
+      : request.trim().length >= 15;
 
   function handlePlannerContinue(summary: string) {
     setRequest(summary);
@@ -214,14 +236,7 @@ export default function RFQForm() {
                   ✦ AI understood your request
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {parsed.product && <AiChip label={parsed.product} />}
-                  {parsed.category && parsed.category !== "Construction materials" && (
-                    <AiChip label={parsed.category} />
-                  )}
-                  {parsed.quantity && <AiChip label={parsed.quantity} />}
-                  {parsed.destination && <AiChip label={parsed.destination} />}
-                  {parsed.incoterms && <AiChip label={parsed.incoterms} />}
-                  {parsed.payment && <AiChip label={formatPaymentLabel(parsed.payment)} />}
+                  <ParsedAiChips parsed={parsed} />
                 </div>
               </div>
             )}
@@ -259,8 +274,7 @@ export default function RFQForm() {
               </div>
               {parsed && parsed.fieldCount > 0 && (
                 <div className="mt-3 flex flex-wrap gap-1.5">
-                  {parsed.product && <AiChip label={parsed.product} />}
-                  {parsed.quantity && <AiChip label={parsed.quantity} />}
+                  <ParsedAiChips parsed={parsed} />
                 </div>
               )}
             </div>

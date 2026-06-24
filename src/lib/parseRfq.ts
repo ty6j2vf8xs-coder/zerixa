@@ -1,4 +1,5 @@
 import { RFQ_PRODUCT_PATTERNS } from "@/lib/product-catalog";
+import { matchCountryFromText, type CountryOption } from "@/lib/countries";
 
 export const DELIVERY_OPTIONS = ["EXW", "FOB", "CIF", "CFR", "DDP"] as const;
 export type Incoterm = (typeof DELIVERY_OPTIONS)[number];
@@ -29,6 +30,8 @@ export type ParsedRfq = {
   quantity: string | null;
   specification: string | null;
   destination: string | null;
+  city: string | null;
+  country: CountryOption | null;
   incoterms: Incoterm | null;
   payment: ParsedPayment | null;
   documents: string[];
@@ -39,36 +42,150 @@ export type ParsedRfq = {
 
 const PRODUCT_PATTERNS = RFQ_PRODUCT_PATTERNS;
 
-const DESTINATIONS: { pattern: RegExp; name: string }[] = [
-  { pattern: /\btripoli|trablus\b/i, name: "Tripoli, Libya" },
-  { pattern: /\bbenghazi\b/i, name: "Benghazi, Libya" },
-  { pattern: /\blibya\b/i, name: "Libya" },
-  { pattern: /\bbasra|basrah\b/i, name: "Basra, Iraq" },
-  { pattern: /\bbaghdad|bagdad\b/i, name: "Baghdad, Iraq" },
-  { pattern: /\biraq\b/i, name: "Iraq" },
-  { pattern: /\bjeddah|jedda\b/i, name: "Jeddah, Saudi Arabia" },
-  { pattern: /\briyadh|riyad\b/i, name: "Riyadh, Saudi Arabia" },
-  { pattern: /\bsaudi\b/i, name: "Saudi Arabia" },
-  { pattern: /\balexandria\b/i, name: "Alexandria, Egypt" },
-  { pattern: /\bcairo\b/i, name: "Cairo, Egypt" },
-  { pattern: /\begypt|mısır\b/i, name: "Egypt" },
-  { pattern: /\balgiers\b/i, name: "Algiers, Algeria" },
-  { pattern: /\balgeria|cezayir\b/i, name: "Algeria" },
-  { pattern: /\blagos\b/i, name: "Lagos, Nigeria" },
-  { pattern: /\bnigeria\b/i, name: "Nigeria" },
-  { pattern: /\bdubai|uae\b/i, name: "Dubai, United Arab Emirates" },
-  { pattern: /\bamman|jordan\b/i, name: "Jordan" },
-  { pattern: /\bkhartoum|sudan\b/i, name: "Sudan" },
-  { pattern: /\bcasablanca|morocco|fas\b/i, name: "Morocco" },
-  { pattern: /\bmersin\b/i, name: "Mersin, Türkiye (FOB)" },
-  { pattern: /\biskenderun\b/i, name: "İskenderun, Türkiye (FOB)" },
-  { pattern: /\bgermany|almanya\b/i, name: "Germany" },
-  { pattern: /\bfrance|fransa\b/i, name: "France" },
-  { pattern: /\bitaly|italya\b/i, name: "Italy" },
-  { pattern: /\bspain|ispanya\b/i, name: "Spain" },
-  { pattern: /\bunited\s+kingdom|\buk\b/i, name: "United Kingdom" },
-  { pattern: /\bunited\s+states|\busa\b|\bu\.s\.a\b/i, name: "United States" },
+const PORT_CITIES: { pattern: RegExp; city: string; country: CountryOption }[] = [
+  { pattern: /\btripoli|trablus\b/i, city: "Tripoli", country: "Libya" },
+  { pattern: /\bbenghazi\b/i, city: "Benghazi", country: "Libya" },
+  { pattern: /\bmisrata\b/i, city: "Misrata", country: "Libya" },
+  { pattern: /\bbasra|basrah\b/i, city: "Basra", country: "Iraq" },
+  { pattern: /\bbaghdad|bagdad\b/i, city: "Baghdad", country: "Iraq" },
+  { pattern: /\bjeddah|jedda\b/i, city: "Jeddah", country: "Saudi Arabia" },
+  { pattern: /\briyadh|riyad\b/i, city: "Riyadh", country: "Saudi Arabia" },
+  { pattern: /\bdammam\b/i, city: "Dammam", country: "Saudi Arabia" },
+  { pattern: /\balexandria\b/i, city: "Alexandria", country: "Egypt" },
+  { pattern: /\bcairo\b/i, city: "Cairo", country: "Egypt" },
+  { pattern: /\bport\s+said\b/i, city: "Port Said", country: "Egypt" },
+  { pattern: /\balgiers\b/i, city: "Algiers", country: "Algeria" },
+  { pattern: /\boran\b/i, city: "Oran", country: "Algeria" },
+  { pattern: /\blagos\b/i, city: "Lagos", country: "Nigeria" },
+  { pattern: /\babuja\b/i, city: "Abuja", country: "Nigeria" },
+  { pattern: /\bdubai\b/i, city: "Dubai", country: "United Arab Emirates" },
+  { pattern: /\babu\s+dhabi\b/i, city: "Abu Dhabi", country: "United Arab Emirates" },
+  { pattern: /\bsharjah\b/i, city: "Sharjah", country: "United Arab Emirates" },
+  { pattern: /\bamman\b/i, city: "Amman", country: "Jordan" },
+  { pattern: /\baqaba\b/i, city: "Aqaba", country: "Jordan" },
+  { pattern: /\bkhartoum\b/i, city: "Khartoum", country: "Sudan" },
+  { pattern: /\bcasablanca\b/i, city: "Casablanca", country: "Morocco" },
+  { pattern: /\btangier\b/i, city: "Tangier", country: "Morocco" },
+  { pattern: /\bmersin\b/i, city: "Mersin", country: "Türkiye" },
+  { pattern: /\biskenderun\b/i, city: "İskenderun", country: "Türkiye" },
+  { pattern: /\bizmir\b/i, city: "İzmir", country: "Türkiye" },
+  { pattern: /\bistanbul\b/i, city: "Istanbul", country: "Türkiye" },
+  { pattern: /\bambarl[ıi]\b/i, city: "Ambarlı", country: "Türkiye" },
+  { pattern: /\bhamburg\b/i, city: "Hamburg", country: "Germany" },
+  { pattern: /\bbremen\b/i, city: "Bremen", country: "Germany" },
+  { pattern: /\bmarseille\b/i, city: "Marseille", country: "France" },
+  { pattern: /\ble\s+havre\b/i, city: "Le Havre", country: "France" },
+  { pattern: /\bgenoa|genova\b/i, city: "Genoa", country: "Italy" },
+  { pattern: /\bnaples|napoli\b/i, city: "Naples", country: "Italy" },
+  { pattern: /\bbarcelona\b/i, city: "Barcelona", country: "Spain" },
+  { pattern: /\bvalencia\b/i, city: "Valencia", country: "Spain" },
+  { pattern: /\brotterdam\b/i, city: "Rotterdam", country: "Netherlands" },
+  { pattern: /\bantwerp|antwerpen\b/i, city: "Antwerp", country: "Belgium" },
+  { pattern: /\blondon\b/i, city: "London", country: "United Kingdom" },
+  { pattern: /\bfelixstowe\b/i, city: "Felixstowe", country: "United Kingdom" },
+  { pattern: /\bnew\s+york\b/i, city: "New York", country: "United States" },
+  { pattern: /\blos\s+angeles\b/i, city: "Los Angeles", country: "United States" },
+  { pattern: /\bmumbai|bombay\b/i, city: "Mumbai", country: "India" },
+  { pattern: /\bkarachi\b/i, city: "Karachi", country: "Pakistan" },
+  { pattern: /\bdoha\b/i, city: "Doha", country: "Qatar" },
+  { pattern: /\bkuwait\s+city\b/i, city: "Kuwait City", country: "Kuwait" },
+  { pattern: /\bmanama\b/i, city: "Manama", country: "Bahrain" },
+  { pattern: /\bmuscat\b/i, city: "Muscat", country: "Oman" },
+  { pattern: /\bbeirut\b/i, city: "Beirut", country: "Lebanon" },
+  { pattern: /\btel\s+aviv\b/i, city: "Tel Aviv", country: "Israel" },
+  { pattern: /\bdar\s+es\s+salaam\b/i, city: "Dar es Salaam", country: "Tanzania" },
+  { pattern: /\bmombasa\b/i, city: "Mombasa", country: "Kenya" },
+  { pattern: /\bdakar\b/i, city: "Dakar", country: "Senegal" },
+  { pattern: /\baccra\b/i, city: "Accra", country: "Ghana" },
+  { pattern: /\btunis\b/i, city: "Tunis", country: "Tunisia" },
 ];
+
+function cleanLocationPhrase(value: string): string {
+  return value
+    .replace(/\s+/g, " ")
+    .replace(/[.:;|]+$/g, "")
+    .trim();
+}
+
+function extractIncotermLocation(text: string): string | null {
+  const match = text.match(
+    /\b(?:CIF|CFR|FOB|DDP|EXW)\s+([A-Za-zÀ-ÿİıÖöÜüŞşÇçĞğ][A-Za-zÀ-ÿİıÖöÜüŞşÇçĞğ\s.'-]{1,48})/i,
+  );
+  if (!match) return null;
+  return cleanLocationPhrase(match[1]);
+}
+
+function extractDeliveryLocation(text: string): string | null {
+  const match = text.match(
+    /\b(?:deliver(?:y)?\s+to|ship(?:ping)?\s+to|destination|port\s+of\s+discharge|to)\s+([A-Za-zÀ-ÿİıÖöÜüŞşÇçĞğ][A-Za-zÀ-ÿİıÖöÜüŞşÇçĞğ\s.'-]{1,48})/i,
+  );
+  if (!match) return null;
+  return cleanLocationPhrase(match[1]);
+}
+
+function matchPortCity(text: string): { city: string; country: CountryOption } | null {
+  for (const entry of PORT_CITIES) {
+    if (entry.pattern.test(text)) {
+      return { city: entry.city, country: entry.country };
+    }
+  }
+  return null;
+}
+
+function extractLocations(text: string): {
+  city: string | null;
+  country: CountryOption | null;
+  destination: string | null;
+} {
+  const hints = [extractIncotermLocation(text), extractDeliveryLocation(text)].filter(
+    Boolean,
+  ) as string[];
+
+  let city: string | null = null;
+  let country: CountryOption | null = matchCountryFromText(text);
+
+  for (const hint of hints) {
+    const port = matchPortCity(hint);
+    if (port) {
+      city = port.city;
+      country = port.country;
+      break;
+    }
+    const hintCountry = matchCountryFromText(hint);
+    if (hintCountry) {
+      country = hintCountry;
+      if (!city) city = hint.replace(new RegExp(`\\b${hintCountry}\\b`, "i"), "").trim() || null;
+      if (city) break;
+    }
+    if (!city && hint.length >= 2 && hint.length <= 40) {
+      city = hint;
+    }
+  }
+
+  if (!city) {
+    const port = matchPortCity(text);
+    if (port) {
+      city = port.city;
+      country = port.country;
+    }
+  }
+
+  if (city && !country) {
+    const port = PORT_CITIES.find((entry) => entry.city === city);
+    if (port) country = port.country;
+  }
+
+  if (!country) {
+    country = matchCountryFromText(text);
+  }
+
+  let destination: string | null = null;
+  if (city && country) destination = `${city}, ${country}`;
+  else if (city) destination = city;
+  else if (country) destination = country;
+
+  return { city, country, destination };
+}
 
 function extractQuantity(text: string): string | null {
   const patterns = [
@@ -141,6 +258,8 @@ export function parseRfq(text: string): ParsedRfq {
     quantity: null,
     specification: null,
     destination: null,
+    city: null,
+    country: null,
     incoterms: null,
     payment: null,
     documents: [],
@@ -174,13 +293,7 @@ export function parseRfq(text: string): ParsedRfq {
   const quantity = extractQuantity(trimmed);
   const specification = extractSpec(trimmed);
 
-  let destination: string | null = null;
-  for (const { pattern, name } of DESTINATIONS) {
-    if (pattern.test(trimmed)) {
-      destination = name;
-      break;
-    }
-  }
+  const { city, country, destination } = extractLocations(trimmed);
 
   let incoterms: ParsedRfq["incoterms"] = null;
   if (/\bDDP\b/i.test(trimmed)) incoterms = "DDP";
@@ -226,7 +339,9 @@ export function parseRfq(text: string): ParsedRfq {
   let fieldCount = 0;
   if (product) fieldCount++;
   if (quantity) fieldCount++;
-  if (destination) fieldCount++;
+  if (city) fieldCount++;
+  if (country) fieldCount++;
+  if (destination && !city && !country) fieldCount++;
   if (incoterms) fieldCount++;
   if (payment) fieldCount++;
   if (specification) fieldCount++;
@@ -240,6 +355,8 @@ export function parseRfq(text: string): ParsedRfq {
     quantity,
     specification,
     destination,
+    city,
+    country,
     incoterms,
     payment,
     documents,
