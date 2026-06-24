@@ -5,6 +5,7 @@ import {
   getAbsoluteUrl,
   getGeoPageUrl,
 } from "@/lib/geo-pages";
+import { PRODUCT_CATEGORIES, getCategoryUrl } from "@/lib/product-catalog";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const hubs = (Object.keys(GEO_HUBS) as (keyof typeof GEO_HUBS)[]).map(
@@ -23,6 +24,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: page.slug === "import-construction-materials-from-turkiye" ? 1 : 0.7,
   }));
 
+  const categories = PRODUCT_CATEGORIES.map((category) => ({
+    url: getAbsoluteUrl(getCategoryUrl(category.slug)),
+    lastModified: new Date(),
+    changeFrequency: "monthly" as const,
+    priority: category.exportPriority === "high" ? 0.75 : 0.65,
+  }));
+
   return [
     {
       url: getAbsoluteUrl("/"),
@@ -32,5 +40,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     ...hubs,
     ...pages,
+    ...categories,
   ];
 }

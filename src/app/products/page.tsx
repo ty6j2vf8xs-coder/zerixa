@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import GeoHubView from "@/components/geo/GeoHubView";
+import ProductsHubView from "@/components/products/ProductsHubView";
 import { GEO_HUBS } from "@/lib/geo-pages";
 
 export const metadata: Metadata = {
@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function ProductsHub() {
-  return <GeoHubView type="product" />;
+  return <ProductsHubView />;
 }

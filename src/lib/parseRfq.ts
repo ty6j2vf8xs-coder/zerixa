@@ -1,3 +1,5 @@
+import { RFQ_PRODUCT_PATTERNS } from "@/lib/product-catalog";
+
 export const DELIVERY_OPTIONS = ["EXW", "FOB", "CIF", "CFR", "DDP"] as const;
 export type Incoterm = (typeof DELIVERY_OPTIONS)[number];
 
@@ -35,27 +37,7 @@ export type ParsedRfq = {
   fieldCount: number;
 };
 
-/** More specific patterns first */
-const PRODUCT_PATTERNS: { pattern: RegExp; product: string; category: string }[] = [
-  { pattern: /\bcem\s*i?\s*42\.?5\s*r\b/i, product: "Portland Cement CEM I 42.5R", category: "Structure & frame" },
-  { pattern: /\b(portland\s+)?cement|çimento\b/i, product: "Portland Cement", category: "Structure & frame" },
-  { pattern: /\bready[\s-]?mix|beton\b/i, product: "Ready-Mix Concrete", category: "Structure & frame" },
-  { pattern: /\brebar|reinforcing\s+bar|inşaat\s+demiri|nervürlü\s+demir|deformed\s+bar\b/i, product: "Reinforcing Steel (Rebar)", category: "Structure & frame" },
-  { pattern: /\bstructural\s+steel|çelik\s+konstrüksiyon\b/i, product: "Structural Steel", category: "Structure & frame" },
-  { pattern: /\bmarble|mermer|granite|granit|travertine|traverten|limestone|kireçtaşı|natural\s+stone|doğal\s+taş\b/i, product: "Marble & Natural Stone", category: "Floors, walls & surfaces" },
-  { pattern: /\bceramic|tile|fayans|seramik|porselen|porcelain\b/i, product: "Ceramic Tiles", category: "Floors, walls & surfaces" },
-  { pattern: /\b(aluminum|aluminium|alüminyum)\s*(window|door|pencere|kapı)s?|window\s+system|door\s+system|sürme\s+kapı\b/i, product: "Aluminum Windows & Doors", category: "Windows, doors & glass" },
-  { pattern: /\bcurtain\s*wall|structural\s+glazing|insulated\s+glass|double\s+glazing|cam\s+cephe\b/i, product: "Glass & Curtain Walls", category: "Windows, doors & glass" },
-  { pattern: /\bfacade|façade|cladding|cephe\s*kaplama|rainscreen|composite\s+panel|kompozit\s+panel|metal\s+facade\b/i, product: "Facade Systems", category: "Exterior & facade" },
-  { pattern: /\bfloat\s+glass|laminated\s+glass|tempered\s+glass|cam\b/i, product: "Glass", category: "Windows, doors & glass" },
-  { pattern: /\binsulation|yalıtım|mineral\s+wool|cam\s+yünü|eps|xps|rockwool\b/i, product: "Insulation", category: "Insulation & waterproofing" },
-  { pattern: /\bwaterproof|su\s+yalıtım|membrane|bitumen|shingle|roofing|çatı\s*kaplama\b/i, product: "Waterproofing & Roofing", category: "Insulation & waterproofing" },
-  { pattern: /\badhesive|sealant|yapıştırıcı|silikon|construction\s+chemical|katkı\s+maddesi\b/i, product: "Construction Chemicals", category: "Adhesives & chemicals" },
-  { pattern: /\bsteel|demir|çelik|iron\b/i, product: "Steel", category: "Structure & frame" },
-  { pattern: /\bgypsum|drywall|alcı\s*pan|plasterboard\b/i, product: "Gypsum & Drywall", category: "Floors, walls & surfaces" },
-  { pattern: /\b(aluminum|aluminium|alüminyum)\s*profile|alüminyum\s*profil\b/i, product: "Aluminum Profiles", category: "Exterior & facade" },
-  { pattern: /\bconstruction\s+material|inşaat\s+malzemesi|building\s+material|yapı\s+malzemesi\b/i, product: "Construction Materials", category: "General" },
-];
+const PRODUCT_PATTERNS = RFQ_PRODUCT_PATTERNS;
 
 const DESTINATIONS: { pattern: RegExp; name: string }[] = [
   { pattern: /\btripoli|trablus\b/i, name: "Tripoli, Libya" },

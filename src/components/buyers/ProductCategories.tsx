@@ -1,37 +1,5 @@
 import Link from "next/link";
-
-const buildingScope = [
-  {
-    title: "Structure & frame",
-    description:
-      "Cement, steel, concrete, and everything that holds the building up.",
-  },
-  {
-    title: "Exterior & facade",
-    description:
-      "Cladding, facade panels, and materials that cover the outside of the building.",
-  },
-  {
-    title: "Windows, doors & glass",
-    description:
-      "Aluminum windows, doors, glass, and curtain wall systems.",
-  },
-  {
-    title: "Floors, walls & surfaces",
-    description:
-      "Marble, tiles, stone, and finish materials for inside and outside.",
-  },
-  {
-    title: "Insulation & waterproofing",
-    description:
-      "Materials that keep buildings warm, dry, and protected over time.",
-  },
-  {
-    title: "Adhesives & chemicals",
-    description:
-      "Sealants, additives, and other products used during construction.",
-  },
-];
+import { HOMEPAGE_PRODUCT_GROUPS, getCategoryUrl } from "@/lib/product-catalog";
 
 export default function ProductCategories() {
   return (
@@ -47,7 +15,7 @@ export default function ProductCategories() {
           </h2>
           <p className="mt-4 text-muted leading-relaxed md:text-lg">
             Access one of the world&apos;s leading construction export hubs —
-            structure, facade, finishes, and raw materials from verified
+            structure, facade, MEP, finishes, and raw materials from verified
             manufacturers in Türkiye.{" "}
             <Link
               href="/guides/turkiye-leading-construction-materials-exporter"
@@ -59,20 +27,33 @@ export default function ProductCategories() {
         </div>
 
         <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {buildingScope.map((scope) => (
-            <div
-              key={scope.title}
-              className="rounded-2xl border border-border bg-background p-7 transition-colors hover:border-accent/30"
+          {HOMEPAGE_PRODUCT_GROUPS.map((group) => (
+            <Link
+              key={group.title}
+              href={getCategoryUrl(group.categorySlugs[0])}
+              className="group rounded-2xl border border-border bg-background p-7 transition-colors hover:border-accent/30"
             >
               <div className="mb-4 h-0.5 w-10 rounded-full bg-accent" />
-              <h3 className="text-base font-semibold leading-snug">
-                {scope.title}
+              <h3 className="text-base font-semibold leading-snug group-hover:text-accent-light transition-colors">
+                {group.title}
               </h3>
               <p className="mt-3 text-sm text-muted leading-relaxed">
-                {scope.description}
+                {group.description}
               </p>
-            </div>
+              <span className="mt-4 inline-block text-xs font-medium text-accent">
+                Browse category →
+              </span>
+            </Link>
           ))}
+        </div>
+
+        <div className="mt-10 text-center">
+          <Link
+            href="/products"
+            className="text-sm font-medium text-accent hover:text-accent-light transition-colors"
+          >
+            View all 29 product categories →
+          </Link>
         </div>
 
         <div className="mt-14 rounded-2xl border border-accent/20 bg-accent/5 px-6 py-8 text-center max-w-3xl mx-auto">
