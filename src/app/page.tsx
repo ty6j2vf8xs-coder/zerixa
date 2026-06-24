@@ -4,6 +4,7 @@ import BuyerHowItWorks from "@/components/buyers/HowItWorks";
 import AIFeatures from "@/components/buyers/AIFeatures";
 import ProductCategories from "@/components/buyers/ProductCategories";
 import ExportRankings from "@/components/buyers/ExportRankings";
+import MarketsReach from "@/components/buyers/MarketsReach";
 import ServicePackages from "@/components/buyers/ServicePackages";
 import WhyZerixa from "@/components/buyers/WhyZerixa";
 import BuyerTrust from "@/components/buyers/Trust";
@@ -20,6 +21,7 @@ export default function Home() {
         <AIFeatures />
         <ProductCategories />
         <ExportRankings />
+        <MarketsReach />
         <ServicePackages />
         <WhyZerixa />
         <BuyerTrust />

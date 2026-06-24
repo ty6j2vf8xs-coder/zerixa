@@ -46,7 +46,7 @@ export const GEO_HUBS: Record<
     path: "/markets",
     title: "Markets We Serve",
     description:
-      "Country and region guides for buyers sourcing construction materials from Türkiye.",
+      "Construction materials export from Türkiye to 195+ countries — MENA, Africa, Europe, Americas, and Asia-Pacific. One RFQ, worldwide delivery.",
   },
   incoterm: {
     path: "/incoterms",

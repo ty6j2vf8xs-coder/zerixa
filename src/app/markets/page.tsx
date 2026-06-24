@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-import GeoHubView from "@/components/geo/GeoHubView";
+import MarketsHubView from "@/components/markets/MarketsHubView";
 import { GEO_HUBS } from "@/lib/geo-pages";
+import { GLOBAL_MARKET_STATS } from "@/lib/markets";
 
 export const metadata: Metadata = {
   title: `${GEO_HUBS.market.title} | Zerixa`,
-  description: GEO_HUBS.market.description,
+  description: `Construction materials export from Türkiye to ${GLOBAL_MARKET_STATS.label} countries. Regional logistics, payment guides, and RFQ within 24h.`,
 };
 
 export default function MarketsHub() {
-  return <GeoHubView type="market" />;
+  return <MarketsHubView />;
 }

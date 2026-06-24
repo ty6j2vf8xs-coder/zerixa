@@ -1,5 +1,5 @@
 /** All countries A–Z, plus NOT SURE as the last option. */
-const COUNTRIES = [
+export const COUNTRIES = [
   "Afghanistan",
   "Albania",
   "Algeria",

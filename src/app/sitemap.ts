@@ -6,6 +6,7 @@ import {
   getGeoPageUrl,
 } from "@/lib/geo-pages";
 import { PRODUCT_CATEGORIES, getCategoryUrl } from "@/lib/product-catalog";
+import { MARKET_REGIONS, getRegionUrl } from "@/lib/markets";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const hubs = (Object.keys(GEO_HUBS) as (keyof typeof GEO_HUBS)[]).map(
@@ -31,6 +32,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: category.exportPriority === "high" ? 0.75 : 0.65,
   }));
 
+  const marketRegions = MARKET_REGIONS.map((region) => ({
+    url: getAbsoluteUrl(getRegionUrl(region.slug)),
+    lastModified: new Date(),
+    changeFrequency: "monthly" as const,
+    priority: 0.7,
+  }));
+
   return [
     {
       url: getAbsoluteUrl("/"),
@@ -41,5 +49,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...hubs,
     ...pages,
     ...categories,
+    ...marketRegions,
   ];
 }
