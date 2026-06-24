@@ -19,7 +19,7 @@ export default function ForBuyers() {
                   <p className="text-accent text-xs mb-2">ALICI TALEBİ</p>
                   <p className="text-foreground">
                     &quot;500 ton çimento, CEM I 42.5R, FOB Mersin,
-                    ödeme LC at sight&quot;
+                    ödeme T/T banka havalesi&quot;
                   </p>
                   <p className="mt-2 text-xs text-muted">
                     📍 Libya · Doğrulanmış · Skor: 94/100

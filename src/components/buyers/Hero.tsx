@@ -47,7 +47,7 @@ export default function BuyerHero() {
             { value: "24h", label: "Quote turnaround" },
             { value: "1", label: "Point of contact" },
             { value: "EXW–DDP", label: "Delivery options" },
-            { value: "AI", label: "Smart procurement" },
+            { value: "T/T", label: "Secure bank transfer" },
           ].map((stat) => (
             <div key={stat.label}>
               <div className="text-2xl font-bold text-accent-light md:text-3xl">

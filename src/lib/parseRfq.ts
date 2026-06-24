@@ -4,9 +4,9 @@ export const DELIVERY_OPTIONS = ["EXW", "FOB", "CIF", "CFR", "DDP"] as const;
 export type Incoterm = (typeof DELIVERY_OPTIONS)[number];
 
 export const PAYMENT_OPTIONS = [
-  { value: "T/T", label: "T/T (Bank Transfer)" },
-  { value: "LC at sight", label: "LC AT SIGHT" },
+  { value: "T/T", label: "T/T (Bank Transfer) — Recommended", recommended: true },
   { value: "Not sure", label: "NOT SURE" },
+  { value: "LC at sight", label: "LC at sight (on request)", secondary: true },
 ] as const;
 
 export type PaymentOption = (typeof PAYMENT_OPTIONS)[number]["value"];
@@ -250,8 +250,8 @@ export function parseRfq(text: string): ParsedRfq {
 }
 
 export const RFQ_EXAMPLES = [
-  "500 tons Portland cement CEM I 42.5R, CIF Tripoli, LC at sight",
+  "500 tons Portland cement CEM I 42.5R, CIF Tripoli, T/T bank transfer",
   "2000 m² marble slabs 2cm, CIF Dubai, T/T",
-  "Aluminum windows and doors for residential project, DDP Germany",
-  "Facade cladding panels 1500 m², FOB Mersin, LC at sight",
+  "Aluminum windows and doors, DDP Germany, T/T",
+  "Facade cladding panels 1500 m², FOB Mersin, T/T",
 ];

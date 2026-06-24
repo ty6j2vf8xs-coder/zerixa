@@ -50,7 +50,7 @@ export default function RFQForm() {
   const [parsed, setParsed] = useState<ParsedRfq | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [delivery, setDelivery] = useState<Incoterm>("CIF");
-  const [payment, setPayment] = useState<PaymentOption>("Not sure");
+  const [payment, setPayment] = useState<PaymentOption>("T/T");
   const [country, setCountry] = useState<CountryOption>("Not sure");
 
   const runParse = useCallback((text: string) => {
@@ -335,6 +335,10 @@ export default function RFQForm() {
                         </option>
                       ))}
                     </select>
+                    <p className="mt-2 text-xs text-muted leading-relaxed">
+                      Recommended: secure T/T (SWIFT) bank transfer. Proforma invoice
+                      issued before you wire — tracked, documented, and straightforward.
+                    </p>
                   </div>
                 </div>
               )}

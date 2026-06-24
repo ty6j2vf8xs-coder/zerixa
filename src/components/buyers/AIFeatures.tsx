@@ -19,7 +19,7 @@ const features = [
   {
     title: "Document AI",
     description:
-      "Proforma invoices, packing lists, and LC compliance checks — generated and verified before shipment.",
+      "Proforma invoices, packing lists, and export documents — generated and verified before shipment.",
     tag: "Zero doc errors",
   },
   {

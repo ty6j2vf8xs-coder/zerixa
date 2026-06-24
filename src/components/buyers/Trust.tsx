@@ -2,9 +2,15 @@ import Link from "next/link";
 
 const trustPoints = [
   {
+    title: "Secure T/T bank transfer",
+    description:
+      "Pay via SWIFT wire to our Turkish export account. Clear proforma invoice before payment — tracked, documented, and transparent.",
+    icon: "🏦",
+  },
+  {
     title: "Escrow protection",
     description:
-      "Payments held securely until delivery is confirmed. Both parties protected.",
+      "Payment milestones aligned with production and shipment. Both buyer and seller protected through agreed terms.",
     icon: "🔒",
   },
   {
@@ -42,7 +48,7 @@ export default function BuyerTrust() {
           </h2>
           <p className="mt-4 text-muted leading-relaxed">
             Importing from a new country carries risk. We reduce that risk with
-            verified suppliers, secure payments, and full documentation.
+            verified suppliers, secure T/T bank transfers, and full documentation.
           </p>
         </div>
 

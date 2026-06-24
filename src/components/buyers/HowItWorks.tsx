@@ -4,7 +4,7 @@ const steps = [
     title: "Describe your need",
     description:
       "Tell us what you need in plain language — product, quantity, destination, payment terms. No technical forms. AI structures your request instantly.",
-    example: '"500 tons cement CEM I 42.5R, FOB Mersin, payment LC"',
+    example: '"500 tons cement CEM I 42.5R, FOB Mersin, T/T bank transfer"',
   },
   {
     step: "02",
@@ -17,8 +17,8 @@ const steps = [
     step: "03",
     title: "Pay securely",
     description:
-      "Pay via bank transfer or letter of credit. Funds held in escrow until delivery is confirmed. Your payment is protected.",
-    example: "T/T (Bank Transfer) · LC AT SIGHT · Escrow protection",
+      "Pay via secure T/T bank transfer (SWIFT). You receive a proforma invoice, wire to our Turkish export account, and we coordinate shipment with full documentation.",
+    example: "T/T (Bank Transfer) · Proforma invoice · Secure SWIFT",
   },
   {
     step: "04",

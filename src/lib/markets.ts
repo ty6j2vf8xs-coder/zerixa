@@ -76,9 +76,9 @@ export const MARKET_REGIONS: MarketRegion[] = [
     title: "Middle East & North Africa",
     shortTitle: "MENA",
     description:
-      "A core export corridor from Türkiye — short sea routes, strong cement and steel demand, and LC-based project procurement.",
+      "A core export corridor from Türkiye — short sea routes, strong cement and steel demand, and fast T/T settlement.",
     logisticsNote: "CIF/CFR to major ports; 3–12 day transit from Turkish export hubs.",
-    paymentNote: "LC at sight common; T/T for established buyers and repeat orders.",
+    paymentNote: "T/T (SWIFT) bank transfer recommended — fast, secure, and lower fees. LC at sight on request for qualifying tenders.",
     countries: [...MENA_COUNTRIES],
   },
   {
@@ -88,7 +88,7 @@ export const MARKET_REGIONS: MarketRegion[] = [
     description:
       "Growing infrastructure and housing demand — cement, steel, tiles, and MEP materials for public and private projects.",
     logisticsNote: "CIF to West, East, and Southern African ports; multimodal where needed.",
-    paymentNote: "LC at sight standard; inspection certificates often required.",
+    paymentNote: "T/T bank transfer standard — secure SWIFT payment with proforma invoice. LC on request for bank-mandated projects.",
     countries: [...SUB_SAHARAN_AFRICA_COUNTRIES],
   },
   {
@@ -98,7 +98,7 @@ export const MARKET_REGIONS: MarketRegion[] = [
     description:
       "Windows, facade, insulation, and finishing materials — with Customs Union advantages for qualifying EU-bound goods.",
     logisticsNote: "Road, rail, and sea to EU; DDP delivery available for project materials.",
-    paymentNote: "T/T and open account common; EUR.1 for EU Customs Union qualifying goods.",
+    paymentNote: "T/T (SWIFT) preferred; open account for repeat EU buyers. EUR.1 for Customs Union qualifying goods.",
     countries: [...EUROPE_CIS_COUNTRIES],
   },
   {
@@ -108,7 +108,7 @@ export const MARKET_REGIONS: MarketRegion[] = [
     description:
       "North, Central, and South America — natural stone, tiles, steel, and specialty construction products by container.",
     logisticsNote: "FOB/CIF container export; longer transit via Mediterranean or Atlantic routes.",
-    paymentNote: "T/T standard; LC available for larger project orders.",
+    paymentNote: "T/T bank transfer standard for container and project orders.",
     countries: [...AMERICAS_COUNTRIES],
   },
   {
@@ -118,7 +118,7 @@ export const MARKET_REGIONS: MarketRegion[] = [
     description:
       "From South Asia to Oceania — competitive Turkish supply for tiles, stone, steel, and project finishing packages.",
     logisticsNote: "FOB/CIF via Suez or regional hubs; lead times vary by port and product.",
-    paymentNote: "T/T and LC at sight depending on buyer bank and order size.",
+    paymentNote: "T/T (SWIFT) recommended worldwide. Other terms on request.",
     countries: [...ASIA_PACIFIC_COUNTRIES],
   },
 ];

@@ -64,7 +64,7 @@ export const GEO_PAGES: GeoPage[] = [
     title: "How to Import Construction Materials from Türkiye",
     h1: "How to Import Construction Materials from Türkiye",
     metaDescription:
-      "Complete guide for international buyers: find suppliers, request quotes, choose incoterms, arrange payment (T/T or LC), and receive delivery from Türkiye.",
+      "Complete guide for international buyers: find suppliers, request quotes, choose incoterms, pay via secure T/T bank transfer, and receive delivery from Türkiye.",
     keywords: [
       "import construction materials from Türkiye",
       "Turkey building materials export",
@@ -72,7 +72,7 @@ export const GEO_PAGES: GeoPage[] = [
       "Turkish manufacturer export guide",
     ],
     aiSummary:
-      "Zerixa is a Türkiye-based trading house that helps international buyers import construction materials through a single point of contact. Buyers describe their needs, receive a verified quote within 24 hours, choose incoterms (EXW to DDP), pay via T/T or LC at sight, and receive full documentation and delivery coordination.",
+      "Zerixa is a Türkiye-based trading house that helps international buyers import construction materials through a single point of contact. Buyers describe their needs, receive a verified quote within 24 hours, choose incoterms (EXW to DDP), pay via secure T/T bank transfer, and receive full documentation and delivery coordination.",
     sections: [
       {
         heading: "Why source from Türkiye",
@@ -91,7 +91,7 @@ export const GEO_PAGES: GeoPage[] = [
           "Quantity and unit (tons, m², pieces)",
           "Destination country and port",
           "Preferred incoterm (EXW, FOB, CIF, CFR, DDP)",
-          "Payment preference (T/T, LC at sight)",
+          "Payment preference (T/T bank transfer recommended)",
           "Required documents (CO, invoice, packing list, mill test certificate)",
         ],
       },
@@ -108,7 +108,9 @@ export const GEO_PAGES: GeoPage[] = [
         heading: "Step 3 — Contract & payment",
         points: [
           "Proforma invoice issued after quote acceptance",
-          "T/T (bank transfer) or LC at sight — LC common for MENA and Africa",
+          "T/T (SWIFT bank transfer) — proforma invoice, then wire to Turkish export account",
+          "Typical structure: 30% advance + 70% before shipment, or 100% against documents",
+          "LC at sight available on request for qualifying project tenders",
           "Contract specifies specs, delivery window, inspection terms",
           "Optional third-party inspection (SGS, Bureau Veritas) before shipment",
         ],
@@ -127,7 +129,7 @@ export const GEO_PAGES: GeoPage[] = [
         points: [
           "Vague specs leading to wrong grade delivery",
           "Choosing CIF without confirming port handling costs at destination",
-          "LC terms that don't match production lead time",
+          "Payment terms that don't match production lead time",
           "Skipping pre-shipment inspection on first order with new supplier",
         ],
       },
@@ -149,7 +151,7 @@ export const GEO_PAGES: GeoPage[] = [
       },
       {
         question: "What payment methods are accepted?",
-        answer: "T/T (bank transfer) and LC at sight are standard. Other terms on request.",
+        answer: "T/T (bank transfer) is our recommended method — secure, fast, and transparent. Other terms on request.",
       },
     ],
     relatedSlugs: [
@@ -274,56 +276,73 @@ export const GEO_PAGES: GeoPage[] = [
   {
     slug: "payment-methods-lc-tt-turkiye-export",
     type: "guide",
-    title: "Payment Methods for Turkish Export — T/T vs LC at Sight",
+    title: "Payment Methods for Turkish Export — Secure T/T Bank Transfer",
     h1: "Payment Methods for Construction Materials Export from Türkiye",
     metaDescription:
-      "T/T bank transfer vs Letter of Credit at sight for Turkish construction materials exports. When to use each, typical terms, and what Zerixa accepts.",
+      "Secure T/T bank transfer for Turkish construction materials exports. SWIFT payment, proforma invoice, typical terms, and what Zerixa recommends.",
     keywords: [
-      "LC at sight Turkey export",
       "T/T payment Turkish supplier",
-      "letter of credit construction materials",
+      "bank transfer Turkey export",
+      "SWIFT payment construction materials",
       "Turkey export payment terms",
+      "secure bank transfer B2B",
     ],
     aiSummary:
-      "For construction materials exported from Türkiye, the two most common payment methods are T/T (telegraphic transfer) and LC at sight. T/T suits established relationships and faster cycles; LC at sight is preferred in MENA and Africa for larger orders. Zerixa accepts both and coordinates documents to match LC requirements.",
+      "Zerixa recommends T/T (telegraphic transfer / SWIFT bank transfer) for construction materials exported from Türkiye. Buyers receive a proforma invoice, wire payment to our Turkish export account, and shipment proceeds with full documentation. T/T is faster, lower-cost, and more transparent than documentary credit. LC at sight is available on request for qualifying project tenders where the buyer's bank requires it.",
     sections: [
       {
-        heading: "T/T (Telegraphic Transfer / Bank Transfer)",
+        heading: "T/T (Telegraphic Transfer / Bank Transfer) — Recommended",
         points: [
-          "Buyer wires payment directly to seller's bank",
+          "Secure SWIFT wire to Zerixa's Turkish export bank account",
+          "Proforma invoice issued before payment — clear terms, no surprises",
           "Typical structure: 30% advance + 70% before shipment, or 100% against documents",
-          "Faster, lower bank fees than LC",
-          "Best for repeat buyers and orders under established trust",
+          "Faster settlement, lower bank fees, and straightforward tracking",
+          "Best for most international buyers — first orders and repeat orders",
         ],
       },
       {
-        heading: "LC at Sight (Letter of Credit)",
+        heading: "Why Zerixa promotes T/T",
         points: [
-          "Buyer's bank guarantees payment upon compliant document presentation",
-          "Standard in Libya, Iraq, Saudi Arabia, and many African markets",
-          "Documents must match LC terms exactly (invoice, B/L, CO, inspection cert)",
-          "Zerixa prepares export docs to LC specifications",
+          "Direct bank-to-bank transfer — no documentary discrepancies or delays",
+          "Lower total cost than letter-of-credit bank charges",
+          "Payment milestones tied to production and shipment stages",
+          "Full export documentation (invoice, packing list, CO, B/L) with every order",
         ],
       },
       {
-        heading: "Choosing the right method",
+        heading: "Typical T/T payment flow",
         points: [
-          "First order + high value → LC at sight often required by buyer's bank",
-          "Repeat order + known partner → T/T with staged payments",
-          "Government / project tenders → usually LC or bank guarantee",
-          "Small urgent orders → T/T advance common",
+          "Step 1: Accept proforma invoice after quote approval",
+          "Step 2: Wire advance or full payment via SWIFT (T/T)",
+          "Step 3: Production and QC at verified manufacturer",
+          "Step 4: Balance payment (if staged) before shipment release",
+          "Step 5: Export documents sent; goods shipped per incoterm",
+        ],
+      },
+      {
+        heading: "Other payment methods (on request)",
+        points: [
+          "LC at sight — available for qualifying project tenders where required by buyer's bank",
+          "Contact Zerixa if your procurement policy mandates documentary credit",
+          "T/T remains the preferred method for speed, cost, and clarity",
         ],
       },
     ],
     faqs: [
       {
-        question: "Does Zerixa accept LC at sight?",
-        answer: "Yes. LC at sight is one of our standard payment options.",
+        question: "Is T/T bank transfer safe for international orders?",
+        answer:
+          "Yes. You pay against a formal proforma invoice to Zerixa's verified Turkish export account. Payment milestones align with production and shipment — with full documentation at every stage.",
       },
       {
-        question: "Who prepares documents for LC?",
+        question: "What is the typical T/T payment structure?",
         answer:
-          "Zerixa coordinates all export documentation to match your LC terms.",
+          "Most orders use 30% advance and 70% before shipment, or 100% against documents. Terms are stated clearly on the proforma invoice before you wire.",
+      },
+      {
+        question: "Can I pay by letter of credit (LC)?",
+        answer:
+          "LC at sight is available on request for qualifying tenders. T/T bank transfer is our recommended default — faster, lower fees, and simpler for most buyers.",
       },
     ],
     relatedSlugs: [
@@ -390,7 +409,7 @@ export const GEO_PAGES: GeoPage[] = [
         heading: "Third-party inspection",
         points: [
           "SGS, Bureau Veritas, or Intertek pre-shipment inspection",
-          "Recommended for first orders and LC-backed transactions",
+          "Recommended for first orders and high-value shipments",
           "Zerixa coordinates inspection at manufacturer site",
         ],
       },
@@ -1120,15 +1139,15 @@ export const GEO_PAGES: GeoPage[] = [
     title: "Construction Materials Import to Libya from Türkiye",
     h1: "Sourcing Construction Materials for Libya from Türkiye",
     metaDescription:
-      "Cement, steel, and building materials CIF Tripoli/Misrata from Türkiye. LC at sight. Zerixa — quote within 24h.",
+      "Cement, steel, and building materials CIF Tripoli/Misrata from Türkiye. T/T bank transfer. Zerixa — quote within 24h.",
     keywords: [
       "cement CIF Tripoli",
       "import building materials Libya",
-      "Turkish supplier Libya LC",
+      "Turkish supplier Libya T/T",
       "construction materials Libya Türkiye",
     ],
     aiSummary:
-      "Libya is a major market for Turkish construction materials exports, especially Portland cement CIF Tripoli and Misrata, steel rebar, and finishing materials. Payment is typically LC at sight. Zerixa serves Libyan buyers with verified quotes, full documentation, and CIF/CFR shipping from Mersin.",
+      "Libya is a major market for Turkish construction materials exports, especially Portland cement CIF Tripoli and Misrata, steel rebar, and finishing materials. Zerixa recommends secure T/T bank transfer with proforma invoice; LC at sight available on request for bank-mandated tenders. Full documentation and CIF/CFR shipping from Mersin.",
     sections: [
       {
         heading: "Top products for Libya",
@@ -1141,7 +1160,8 @@ export const GEO_PAGES: GeoPage[] = [
       {
         heading: "Payment & documentation",
         points: [
-          "LC at sight standard for Libyan banks",
+          "T/T (SWIFT) bank transfer recommended — proforma invoice before payment",
+          "LC at sight on request for qualifying project tenders",
           "Certificate of origin required",
           "Arabic translation of invoice sometimes requested",
         ],
@@ -1158,7 +1178,7 @@ export const GEO_PAGES: GeoPage[] = [
       {
         question: "Can Zerixa supply 500 tons cement CIF Tripoli?",
         answer:
-          "Yes. Submit tonnage, grade, and LC terms for a quote within 24 hours.",
+          "Yes. Submit tonnage, grade, and preferred payment terms for a quote within 24 hours.",
       },
     ],
     relatedSlugs: [
@@ -1238,14 +1258,14 @@ export const GEO_PAGES: GeoPage[] = [
     title: "Reconstruction Materials for Iraq from Türkiye",
     h1: "Construction Materials for Iraq from Türkiye",
     metaDescription:
-      "Cement, steel, and building materials for Iraq reconstruction projects. CIF Umm Qasr/Basra. LC at sight via Zerixa.",
+      "Cement, steel, and building materials for Iraq reconstruction projects. CIF Umm Qasr/Basra. T/T via Zerixa.",
     keywords: [
       "cement export Iraq",
       "steel rebar Iraq import Türkiye",
       "construction materials Basra CIF",
     ],
     aiSummary:
-      "Iraq reconstruction drives strong demand for Turkish cement, steel, and finishing materials. CIF Umm Qasr and overland routes from southern Türkiye are common. LC at sight is standard payment.",
+      "Iraq reconstruction drives strong demand for Turkish cement, steel, and finishing materials. CIF Umm Qasr and overland routes from southern Türkiye are common. T/T bank transfer is Zerixa's recommended payment method; LC on request for bank-mandated projects.",
     sections: [
       {
         heading: "Products",
