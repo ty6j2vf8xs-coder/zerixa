@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 
 const navLinks = [
   { href: "/guides", label: "Guides" },
@@ -12,6 +13,7 @@ const navLinks = [
 
 export default function GeoHeader() {
   const [open, setOpen] = useState(false);
+  useBodyScrollLock(open);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl">
@@ -51,6 +53,7 @@ export default function GeoHeader() {
           className="flex flex-col gap-1.5 md:hidden"
           onClick={() => setOpen(!open)}
           aria-label="Menu"
+          aria-expanded={open}
         >
           <span
             className={`block h-0.5 w-6 bg-foreground transition-transform ${open ? "translate-y-2 rotate-45" : ""}`}

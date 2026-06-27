@@ -31,7 +31,7 @@ export default function GeoPageView({ page }: Props) {
     <>
       <GeoJsonLd page={page} />
       <GeoHeader />
-      <main className="pt-16">
+      <main className="flex-1 pt-16">
         <article
           className={`mx-auto px-6 py-16 ${wide ? "max-w-5xl" : "max-w-3xl"}`}
         >

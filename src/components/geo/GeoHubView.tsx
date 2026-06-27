@@ -19,7 +19,7 @@ export default function GeoHubView({ type }: Props) {
   return (
     <>
       <GeoHeader />
-      <main className="pt-16">
+      <main className="flex-1 pt-16">
         <div className="mx-auto max-w-6xl px-6 py-16">
           <nav className="mb-6 text-sm text-muted">
             <Link href="/" className="hover:text-accent-light transition-colors">

@@ -9,6 +9,7 @@
   --surface-elevated: #1c2330;
   --border: #2a3444;
   --muted: #94a3b8;
+  --header-offset: 5rem;
 }
 
 @theme inline {
@@ -30,13 +31,24 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 5rem;
+  scroll-padding-top: var(--header-offset);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Anchor targets sit below the fixed header */
+section[id] {
+  scroll-margin-top: var(--header-offset);
 }
 
 ::selection {

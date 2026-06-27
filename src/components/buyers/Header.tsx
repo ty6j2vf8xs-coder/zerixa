@@ -1,6 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
+import { scrollToTop } from "@/lib/scroll";
+import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 
 const navLinks = [
   { href: "#how-it-works", label: "How It Works" },
@@ -11,18 +14,27 @@ const navLinks = [
 
 export default function BuyerHeader() {
   const [open, setOpen] = useState(false);
+  useBodyScrollLock(open);
+
+  function handleLogoClick(e: React.MouseEvent<HTMLAnchorElement>) {
+    if (window.location.pathname !== "/") return;
+    e.preventDefault();
+    window.history.replaceState(null, "", "/");
+    scrollToTop();
+    setOpen(false);
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-        <a href="#" className="flex items-center gap-2.5">
+        <Link href="/" className="flex items-center gap-2.5" onClick={handleLogoClick}>
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-lg font-bold leading-none text-background">
             Z
           </div>
           <span className="text-lg font-semibold tracking-tight">
             zerixa<span className="text-accent">.ai</span>
           </span>
-        </a>
+        </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
           {navLinks.map((link) => (
@@ -50,6 +62,7 @@ export default function BuyerHeader() {
           className="flex flex-col gap-1.5 md:hidden"
           onClick={() => setOpen(!open)}
           aria-label="Menu"
+          aria-expanded={open}
         >
           <span
             className={`block h-0.5 w-6 bg-foreground transition-transform ${open ? "translate-y-2 rotate-45" : ""}`}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   parseRfq,
   RFQ_EXAMPLES,
@@ -178,6 +178,7 @@ export default function RFQForm() {
   const [country, setCountry] = useState<CountryOption>("Not sure");
   const [boqFile, setBoqFile] = useState<File | null>(null);
   const [boqError, setBoqError] = useState("");
+  const emailRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -185,6 +186,11 @@ export default function RFQForm() {
       setInputMode("planner");
     }
   }, []);
+
+  useEffect(() => {
+    if (step !== 2) return;
+    emailRef.current?.focus({ preventScroll: true });
+  }, [step]);
 
   const runParse = useCallback((text: string) => {
     const result = parseRfq(text);
@@ -322,7 +328,7 @@ export default function RFQForm() {
 
   if (submitted) {
     return (
-      <section id="request-quote" className="scroll-mt-20 border-t border-border bg-surface py-24">
+      <section id="request-quote" className="border-t border-border bg-surface py-24">
         <div className="mx-auto max-w-xl px-6 text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-accent/20 text-3xl">
             ✓
@@ -338,7 +344,7 @@ export default function RFQForm() {
   }
 
   return (
-    <section id="request-quote" className="scroll-mt-20 border-t border-border bg-surface py-24">
+    <section id="request-quote" className="border-t border-border bg-surface py-24">
       <div className={`mx-auto px-6 ${step === 1 && inputMode === "planner" ? "max-w-3xl" : "max-w-2xl"}`}>
         <div className="text-center">
           <p className="text-sm font-medium uppercase tracking-widest text-accent">
@@ -505,11 +511,11 @@ export default function RFQForm() {
                 Email <span className="text-accent">*</span>
               </label>
               <input
+                ref={emailRef}
                 id="email"
                 name="email"
                 type="email"
                 required
-                autoFocus
                 placeholder="you@company.com"
                 className="w-full rounded-xl border border-border bg-background px-4 py-3.5 text-sm outline-none transition-colors focus:border-accent/50"
               />

@@ -16,7 +16,7 @@ export default function Home() {
   return (
     <>
       <BuyerHeader />
-      <main>
+      <main className="flex-1">
         <BuyerHero />
         <BuyerHowItWorks />
         <AIFeatures />

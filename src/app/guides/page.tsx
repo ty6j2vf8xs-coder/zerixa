@@ -17,7 +17,7 @@ const guides = [
 
 export default function GuidesPage() {
   return (
-    <main className="min-h-screen bg-background px-6 py-24">
+    <main className="flex-1 bg-background px-6 py-24">
       <div className="mx-auto max-w-3xl">
         <Link href="/" className="text-sm text-accent hover:underline">
           ← Back to Zerixa
