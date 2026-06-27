@@ -314,6 +314,28 @@ function normalizeQuantityInput(text: string): string {
   return text.replace(/m²/gi, "m2").replace(/m³/gi, "m3");
 }
 
+function stripQuantityPhrases(text: string): string {
+  const normalized = normalizeQuantityInput(text);
+  return normalized
+    .replace(
+      new RegExp(
+        `\\d[\\d,.\\s]*\\s*(?:${QUANTITY_UNIT_ALIASES}|${KG_ALIASES}|${AREA_ALIASES}|${VOLUME_ALIASES}|${COUNT_ALIASES}|${PACK_ALIASES}|${CONTAINER_ALIASES}|m2|m3|sqm)\\b`,
+        "gi",
+      ),
+      "",
+    )
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function isQuantityDetail(detail: string, quantity: string | null): boolean {
+  const d = normalizeQuantityInput(detail).toLowerCase().trim();
+  if (/^\d[\d,.]*\s*m$/i.test(d)) return true;
+  if (!quantity) return false;
+  const q = normalizeQuantityInput(quantity).toLowerCase();
+  return d === q || d.includes(q);
+}
+
 function extractQuantities(text: string): QuantityMatch[] {
   const input = normalizeQuantityInput(text);
   const patterns: { regex: RegExp; normalize: (match: RegExpMatchArray) => string }[] = [
@@ -406,7 +428,7 @@ const PRODUCT_DETAIL_PATTERNS: RegExp[] = [
   /\bISO\s*[\d-]+\b/gi,
   /\bEN\s*[\d-]+\b/gi,
   /\bASTM\s*[\dA-Z./-]+\b/gi,
-  /\b\d+(?:\.\d+)?\s*(?:mm|cm|m)\s*(?:rebar|bar|diameter|thick(?:ness)?|kalınlık|kalinlik|tile|fayans)?\b/gi,
+  /\b\d+(?:\.\d+)?\s*(?:mm|cm|m(?!2|3|²|³))\s*(?:rebar|bar|diameter|thick(?:ness)?|kalınlık|kalinlik|tile|fayans)?\b/gi,
   /\b\d+\s*x\s*\d+\s*(?:cm|mm|m)\b/gi,
   /\b\d+\s*(?:cm|mm|m)\s*(?:thick|thickness|kalınlık|kalinlik)\b/gi,
   /\b(?:bagged|in\s+bags|big\s+bags?|bulk|loose|palletized|crated|on\s+pallets)\b/gi,
@@ -431,39 +453,35 @@ function titleCaseDetail(value: string): string {
 }
 
 function extractProductDetails(text: string, product: string | null): string[] {
+  const normalized = normalizeQuantityInput(text);
+  const quantity = extractQuantity(text);
   const details = new Set<string>();
   const productLower = product?.toLowerCase() ?? "";
 
   for (const pattern of PRODUCT_DETAIL_PATTERNS) {
-    for (const match of text.matchAll(pattern)) {
+    for (const match of normalized.matchAll(pattern)) {
       const detail = match[0].trim().replace(/\s+/g, " ");
       if (detail.length < 2 || detail.length > 80) continue;
       if (productLower && productLower.includes(detail.toLowerCase())) continue;
+      if (isQuantityDetail(detail, quantity)) continue;
       details.add(detail.replace(/\s+/g, " "));
     }
   }
 
-  const descriptiveChunk = text
+  const descriptiveChunk = normalized
     .split(
       /\s*(?:,|\||;|\b(?:CIF|FOB|CFR|DDP|EXW)\b|\bpayment\b|\bödeme\b|\bdelivery\b|\bteslimat\b)/i,
     )[0]
     ?.trim();
 
   if (descriptiveChunk && product) {
-    const withoutQty = descriptiveChunk
-      .replace(
-        new RegExp(
-          `\\d[\\d,.\\s]*\\s*(?:${QUANTITY_UNIT_ALIASES}|${KG_ALIASES}|${AREA_ALIASES}|${VOLUME_ALIASES}|${COUNT_ALIASES}|${PACK_ALIASES}|${CONTAINER_ALIASES})\\b`,
-          "gi",
-        ),
-        "",
-      )
+    const withoutQty = stripQuantityPhrases(descriptiveChunk)
       .replace(new RegExp(product.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"), "")
       .replace(/\b(?:of|for|and|with)\b/gi, " ")
       .replace(/\s+/g, " ")
       .trim();
 
-  const extraPhrases = withoutQty
+    const extraPhrases = withoutQty
       .split(/\s+(?:and|&|\+)\s+|,\s+/i)
       .map((part) => part.trim())
       .filter((part) => part.length >= 3 && part.length <= 60);
@@ -472,17 +490,19 @@ function extractProductDetails(text: string, product: string | null): string[] {
       if (productLower.includes(phrase.toLowerCase())) continue;
       if (/^(please|urgent|asap|acil)$/i.test(phrase)) continue;
       if (/^\d+$/.test(phrase)) continue;
+      if (isQuantityDetail(phrase, quantity)) continue;
       if ([...details].some((d) => d.toLowerCase() === phrase.toLowerCase())) continue;
       details.add(titleCaseDetail(phrase));
     }
   }
 
-  return [...details];
+  return [...details].filter((detail) => !isQuantityDetail(detail, quantity));
 }
 
 function extractSpec(text: string, productDetails: string[]): string | null {
   const fromDetails = productDetails.find((detail) =>
-    /\b(CEM|ISO|EN|ASTM|grade|\d+\s*x\s*\d+|\d+\s*(?:mm|cm))\b/i.test(detail),
+    /\b(CEM|ISO|EN|ASTM|grade|\d+\s*x\s*\d+|\d+\s*(?:mm|cm))\b/i.test(detail) &&
+    !/^\d[\d,.]*\s*m$/i.test(normalizeQuantityInput(detail)),
   );
   if (fromDetails) return fromDetails;
 
