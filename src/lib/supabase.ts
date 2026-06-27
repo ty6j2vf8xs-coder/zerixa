@@ -14,6 +14,8 @@ export type LeadRow = {
   rfq_score: number | null;
   status: "new" | "contacted" | "quoted" | "closed";
   source: string;
+  boq_file_path: string | null;
+  boq_file_name: string | null;
 };
 
 export type LeadInsert = {
@@ -27,6 +29,8 @@ export type LeadInsert = {
   parsed?: Record<string, unknown> | null;
   rfq_score?: number | null;
   source?: string;
+  boq_file_path?: string | null;
+  boq_file_name?: string | null;
 };
 
 let adminClient: SupabaseClient | null = null;

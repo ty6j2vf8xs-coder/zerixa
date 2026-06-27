@@ -11,6 +11,8 @@ type LeadPayload = {
   payment?: string | null;
   parsed?: Record<string, unknown> | null;
   rfqScore?: number | null;
+  boqFilePath?: string | null;
+  boqFileName?: string | null;
 };
 
 function isValidEmail(value: string): boolean {
@@ -54,6 +56,8 @@ export async function POST(request: Request) {
     parsed: body.parsed ?? null,
     rfq_score: typeof body.rfqScore === "number" ? body.rfqScore : null,
     source: "website",
+    boq_file_path: body.boqFilePath?.trim() || null,
+    boq_file_name: body.boqFileName?.trim() || null,
   };
 
   const { data, error } = await supabase.from("leads").insert(row).select("id").single();

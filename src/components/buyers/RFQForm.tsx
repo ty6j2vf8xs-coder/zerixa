@@ -17,6 +17,7 @@ import {
 import ContainerPlanner from "@/components/buyers/ContainerPlanner";
 import RfqScorePanel, { RfqWritingGuide } from "@/components/buyers/RfqScorePanel";
 import { scoreRfq } from "@/lib/rfq-score";
+import { BOQ_MAX_BYTES } from "@/lib/boq-storage";
 
 type Step = 1 | 2;
 type InputMode = "text" | "planner";
@@ -92,6 +93,8 @@ export default function RFQForm() {
   const [delivery, setDelivery] = useState<Incoterm>("CIF");
   const [payment, setPayment] = useState<PaymentOption>("T/T");
   const [country, setCountry] = useState<CountryOption>("Not sure");
+  const [boqFile, setBoqFile] = useState<File | null>(null);
+  const [boqError, setBoqError] = useState("");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -133,6 +136,55 @@ export default function RFQForm() {
     setStep(2);
   }
 
+  function handleBoqSelect(file: File | null) {
+    setBoqError("");
+    if (!file) {
+      setBoqFile(null);
+      return;
+    }
+    if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
+      setBoqError("Only PDF files are accepted.");
+      setBoqFile(null);
+      return;
+    }
+    if (file.size > BOQ_MAX_BYTES) {
+      setBoqError("PDF must be 20 MB or smaller.");
+      setBoqFile(null);
+      return;
+    }
+    setBoqFile(file);
+  }
+
+  async function uploadBoqPdf(file: File): Promise<{ path: string; fileName: string }> {
+    const urlRes = await fetch("/api/leads/boq-upload-url", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fileName: file.name, fileSize: file.size }),
+    });
+    const urlData = (await urlRes.json().catch(() => null)) as {
+      error?: string;
+      path?: string;
+      signedUrl?: string;
+      fileName?: string;
+    } | null;
+
+    if (!urlRes.ok || !urlData?.path || !urlData.signedUrl) {
+      throw new Error(urlData?.error ?? "Could not prepare PDF upload.");
+    }
+
+    const uploadRes = await fetch(urlData.signedUrl, {
+      method: "PUT",
+      headers: { "Content-Type": "application/pdf" },
+      body: file,
+    });
+
+    if (!uploadRes.ok) {
+      throw new Error("PDF upload failed. Please try again.");
+    }
+
+    return { path: urlData.path, fileName: urlData.fileName ?? file.name };
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
@@ -143,6 +195,15 @@ export default function RFQForm() {
     const score = scoreRfq(parsed, request);
 
     try {
+      let boqFilePath: string | null = null;
+      let boqFileName: string | null = null;
+
+      if (boqFile) {
+        const uploaded = await uploadBoqPdf(boqFile);
+        boqFilePath = uploaded.path;
+        boqFileName = uploaded.fileName;
+      }
+
       const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -156,6 +217,8 @@ export default function RFQForm() {
           payment,
           parsed,
           rfqScore: score.score,
+          boqFilePath,
+          boqFileName,
         }),
       });
 
@@ -382,6 +445,52 @@ export default function RFQForm() {
               </div>
             </div>
 
+            <div>
+              <label htmlFor="boq" className="mb-1.5 block text-sm font-medium">
+                BOQ / Bill of Quantities <span className="text-muted font-normal">(optional PDF)</span>
+              </label>
+              <div className="rounded-xl border border-dashed border-border bg-background p-4">
+                {boqFile ? (
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">{boqFile.name}</p>
+                      <p className="text-xs text-muted">
+                        {(boqFile.size / (1024 * 1024)).toFixed(1)} MB · PDF
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleBoqSelect(null)}
+                      className="shrink-0 text-xs text-muted hover:text-foreground"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <input
+                      id="boq"
+                      name="boq"
+                      type="file"
+                      accept="application/pdf,.pdf"
+                      className="sr-only"
+                      onChange={(e) => handleBoqSelect(e.target.files?.[0] ?? null)}
+                    />
+                    <label
+                      htmlFor="boq"
+                      className="flex cursor-pointer flex-col items-center gap-2 py-2 text-center"
+                    >
+                      <span className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:border-accent/40 hover:text-foreground">
+                        Choose PDF
+                      </span>
+                      <span className="text-xs text-muted">Max 20 MB · stored securely</span>
+                    </label>
+                  </>
+                )}
+              </div>
+              {boqError && <p className="mt-2 text-xs text-red-400">{boqError}</p>}
+            </div>
+
             {/* Collapsible details — only if user wants to refine */}
             <div>
               <button
@@ -483,7 +592,11 @@ export default function RFQForm() {
                 disabled={loading}
                 className="glow-amber flex-1 rounded-xl bg-accent py-4 text-base font-semibold text-background transition-all hover:bg-accent-light disabled:opacity-60"
               >
-                {loading ? "Sending…" : "Get My Free Quote"}
+                {loading
+                  ? boqFile
+                    ? "Uploading PDF…"
+                    : "Sending…"
+                  : "Get My Free Quote"}
               </button>
             </div>
 
