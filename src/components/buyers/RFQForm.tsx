@@ -420,7 +420,7 @@ export default function RFQForm() {
                 autoFocus
                 value={request}
                 onChange={(e) => setRequest(e.target.value)}
-                placeholder="e.g. 500 tons Portland cement CEM I 42.5R bagged, CIF Tripoli, wire transfer"
+                placeholder="e.g. Porcelain Tiles 1400 sqm CFR Hamburg, Germany, TT Payment"
                 className="w-full rounded-2xl border border-border bg-background px-5 py-4 text-base outline-none transition-colors focus:border-accent/50 resize-none leading-relaxed"
               />
             </div>

@@ -309,7 +309,13 @@ function formatQuantityNumber(value: string): string {
   return value.replace(/,/g, "").trim();
 }
 
+/** Superscript units break JS \\b — normalize before quantity regexes. */
+function normalizeQuantityInput(text: string): string {
+  return text.replace(/m²/gi, "m2").replace(/m³/gi, "m3");
+}
+
 function extractQuantities(text: string): QuantityMatch[] {
+  const input = normalizeQuantityInput(text);
   const patterns: { regex: RegExp; normalize: (match: RegExpMatchArray) => string }[] = [
     {
       regex: new RegExp(`(\\d[\\d,.]*)\\s*${QUANTITY_UNIT_ALIASES}\\b`, "gi"),
@@ -372,7 +378,7 @@ function extractQuantities(text: string): QuantityMatch[] {
   const seen = new Set<string>();
 
   for (const { regex, normalize } of patterns) {
-    for (const match of text.matchAll(regex)) {
+    for (const match of input.matchAll(regex)) {
       const normalized = normalize(match);
       const key = normalized.toLowerCase();
       if (seen.has(key)) continue;
