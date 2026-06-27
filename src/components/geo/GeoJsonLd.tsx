@@ -18,7 +18,7 @@ export default function GeoJsonLd({ page }: Props) {
         "@type": "Organization",
         name: "Zerixa",
         url: "https://zerixa.ai",
-        logo: "https://zerixa.ai/icon.svg",
+        logo: "https://zerixa.ai/apple-icon.png",
         description:
           "Türkiye-based trading house for construction materials export. Single point of contact for international buyers.",
         areaServed: "Worldwide",
