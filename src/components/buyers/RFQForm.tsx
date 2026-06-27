@@ -15,7 +15,7 @@ import {
   type CountryOption,
 } from "@/lib/parseRfq";
 import ContainerPlanner from "@/components/buyers/ContainerPlanner";
-import RfqScorePanel from "@/components/buyers/RfqScorePanel";
+import RfqScorePanel, { RfqWritingGuide } from "@/components/buyers/RfqScorePanel";
 
 type Step = 1 | 2;
 type InputMode = "text" | "planner";
@@ -141,7 +141,7 @@ export default function RFQForm() {
 
   if (submitted) {
     return (
-      <section id="request-quote" className="scroll-mt-20 border-t border-border bg-surface py-10 md:py-14">
+      <section id="request-quote" className="border-t border-border bg-surface py-24">
         <div className="mx-auto max-w-xl px-6 text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-accent/20 text-3xl">
             ✓
@@ -157,13 +157,13 @@ export default function RFQForm() {
   }
 
   return (
-    <section id="request-quote" className="scroll-mt-20 border-t border-border bg-surface py-10 md:py-14">
+    <section id="request-quote" className="border-t border-border bg-surface py-24">
       <div className={`mx-auto px-6 ${step === 1 && inputMode === "planner" ? "max-w-3xl" : "max-w-2xl"}`}>
         <div className="text-center">
-          <p className="text-xs font-medium uppercase tracking-widest text-accent">
+          <p className="text-sm font-medium uppercase tracking-widest text-accent">
             Request a Quote
           </p>
-          <h2 className="mt-1.5 text-2xl font-bold tracking-tight md:text-3xl">
+          <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
             {step === 1 ? (
               <>
                 What do you{" "}
@@ -176,7 +176,7 @@ export default function RFQForm() {
               </>
             )}
           </h2>
-          <p className="mt-1.5 text-sm text-muted">
+          <p className="mt-4 text-muted">
             {step === 1
               ? inputMode === "planner"
                 ? "List every product line — we'll build one consolidated request."
@@ -186,18 +186,18 @@ export default function RFQForm() {
         </div>
 
         {/* Progress */}
-        <div className="mt-3 flex items-center justify-center gap-3">
+        <div className="mt-8 flex items-center justify-center gap-3">
           <div className={`h-1.5 w-16 rounded-full ${step >= 1 ? "bg-accent" : "bg-border"}`} />
           <div className={`h-1.5 w-16 rounded-full ${step >= 2 ? "bg-accent" : "bg-border"}`} />
         </div>
 
         {step === 1 ? (
-          <div className="mt-4 space-y-3">
+          <div className="mt-10 space-y-5">
             <div className="flex rounded-xl border border-border bg-background p-1">
               <button
                 type="button"
                 onClick={() => setInputMode("text")}
-                className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
                   inputMode === "text"
                     ? "bg-accent/15 text-accent-light"
                     : "text-muted hover:text-foreground"
@@ -208,7 +208,7 @@ export default function RFQForm() {
               <button
                 type="button"
                 onClick={() => setInputMode("planner")}
-                className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
                   inputMode === "planner"
                     ? "bg-accent/15 text-accent-light"
                     : "text-muted hover:text-foreground"
@@ -222,71 +222,71 @@ export default function RFQForm() {
               <ContainerPlanner onContinue={handlePlannerContinue} />
             ) : (
               <>
-            <p className="text-center text-[11px] text-muted">
-              Product · quantity · destination · incoterm · payment
-            </p>
+            <RfqWritingGuide />
+
             <div className="relative">
               <textarea
                 id="request"
                 name="request"
-                rows={2}
+                rows={5}
+                autoFocus
                 value={request}
                 onChange={(e) => setRequest(e.target.value)}
-                placeholder="e.g. 500 tons cement CEM I 42.5R, CIF Tripoli, wire transfer"
-                className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none transition-colors focus:border-accent/50 resize-none leading-snug md:rounded-2xl md:py-3"
+                placeholder="e.g. 500 tons Portland cement CEM I 42.5R bagged, CIF Tripoli, wire transfer"
+                className="w-full rounded-2xl border border-border bg-background px-5 py-4 text-base outline-none transition-colors focus:border-accent/50 resize-none leading-relaxed"
               />
             </div>
 
-            <button
-              type="button"
-              disabled={!canContinue}
-              onClick={() => setStep(2)}
-              className="glow-amber w-full rounded-xl bg-accent py-3 text-base font-semibold text-background transition-all hover:bg-accent-light disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              Continue
-            </button>
+            <RfqScorePanel text={request} parsed={parsed} />
 
-            {!canContinue && request.length > 0 && (
-              <p className="text-center text-[11px] text-muted">
-                {parsed?.needsBuyerDestination
-                  ? "EXW/FOB with a Turkish port — add your country (e.g. buyer in Libya)"
-                  : "Add product, quantity, or destination to continue"}
-              </p>
-            )}
-
-            <div className="-mx-1 overflow-x-auto px-1 pb-1">
-              <p className="mb-1 text-[11px] text-muted">Examples:</p>
-              <div className="flex gap-2 w-max max-w-full">
+            <div>
+              <p className="mb-2 text-xs text-muted">Try an example:</p>
+              <div className="flex flex-wrap gap-2">
                 {RFQ_EXAMPLES.map((ex, i) => (
                   <button
                     key={i}
                     type="button"
                     onClick={() => setRequest(ex)}
-                    className="shrink-0 rounded-lg border border-border bg-background px-2.5 py-1 text-[11px] text-muted transition-colors hover:border-accent/40 hover:text-foreground whitespace-nowrap"
+                    className="rounded-lg border border-border bg-background px-3 py-1.5 text-xs text-muted transition-colors hover:border-accent/40 hover:text-foreground text-left"
                   >
-                    {ex.length > 42 ? `${ex.slice(0, 42)}…` : ex}
+                    {ex.length > 55 ? `${ex.slice(0, 55)}…` : ex}
                   </button>
                 ))}
               </div>
             </div>
 
-            <RfqScorePanel text={request} parsed={parsed} />
-
             {parsed && parsed.fieldCount > 0 && (
-              <div className="rounded-xl border border-accent/20 bg-accent/5 p-3">
-                <p className="text-xs font-medium text-accent mb-2">
+              <div className="rounded-2xl border border-accent/20 bg-accent/5 p-5">
+                <p className="text-xs font-medium text-accent mb-3">
                   ✦ AI understood your request
                 </p>
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap gap-2">
                   <ParsedAiChips parsed={parsed} />
                 </div>
               </div>
+            )}
+
+            <button
+              type="button"
+              disabled={!canContinue}
+              onClick={() => setStep(2)}
+              className="glow-amber w-full rounded-xl bg-accent py-4 text-base font-semibold text-background transition-all hover:bg-accent-light disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Continue
+            </button>
+
+            {!canContinue && request.length > 0 && (
+              <p className="text-center text-xs text-muted">
+                {parsed?.needsBuyerDestination
+                  ? "EXW/FOB with a Turkish port — add your country (e.g. buyer in Libya)"
+                  : "Add product, quantity, or destination to continue"}
+              </p>
             )}
               </>
             )}
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <form onSubmit={handleSubmit} className="mt-10 space-y-5">
             {/* Request summary */}
             <div className="rounded-2xl border border-border bg-background p-4">
               <div className="flex items-start justify-between gap-3">

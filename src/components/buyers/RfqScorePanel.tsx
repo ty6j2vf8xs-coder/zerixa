@@ -114,7 +114,7 @@ export default function RfqScorePanel({ text, parsed }: Props) {
   const metCount = result.criteria.filter((item) => item.met).length;
 
   return (
-    <div className="rounded-2xl border border-border bg-background p-5 space-y-3">
+    <div className="rounded-2xl border border-border bg-background p-5 space-y-4">
       <div className="flex items-start gap-4">
         <ScoreRing score={result.score} tier={result.tier} />
         <div className="min-w-0 flex-1">
