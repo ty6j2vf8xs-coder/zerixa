@@ -322,7 +322,7 @@ export default function RFQForm() {
 
   if (submitted) {
     return (
-      <section id="request-quote" className="border-t border-border bg-surface py-24">
+      <section id="request-quote" className="scroll-mt-20 border-t border-border bg-surface py-24">
         <div className="mx-auto max-w-xl px-6 text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-accent/20 text-3xl">
             ✓
@@ -338,7 +338,7 @@ export default function RFQForm() {
   }
 
   return (
-    <section id="request-quote" className="border-t border-border bg-surface py-24">
+    <section id="request-quote" className="scroll-mt-20 border-t border-border bg-surface py-24">
       <div className={`mx-auto px-6 ${step === 1 && inputMode === "planner" ? "max-w-3xl" : "max-w-2xl"}`}>
         <div className="text-center">
           <p className="text-sm font-medium uppercase tracking-widest text-accent">
@@ -417,7 +417,6 @@ export default function RFQForm() {
                 id="request"
                 name="request"
                 rows={5}
-                autoFocus
                 value={request}
                 onChange={(e) => setRequest(e.target.value)}
                 placeholder="e.g. Porcelain Tiles 1400 sqm CFR Hamburg, Germany, TT Payment"
