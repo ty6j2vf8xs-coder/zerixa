@@ -16,8 +16,8 @@ export default function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
         <a href="#" className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent font-bold text-background text-sm lowercase">
-            z
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-lg font-bold leading-none text-background">
+            Z
           </div>
           <span className="text-lg font-semibold tracking-tight">
             zerixa<span className="text-accent">.ai</span>
