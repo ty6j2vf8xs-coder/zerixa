@@ -19,10 +19,8 @@ import RfqScorePanel, { RfqWritingGuide } from "@/components/buyers/RfqScorePane
 import { scoreRfq } from "@/lib/rfq-score";
 import { BOQ_MAX_BYTES } from "@/lib/boq-storage";
 
-import RfqAgentChat from "@/components/buyers/RfqAgentChat";
-
 type Step = 1 | 2;
-type InputMode = "text" | "planner" | "agent";
+type InputMode = "text" | "planner";
 
 const detailFieldClass =
   "w-full h-11 rounded-xl border border-border bg-background px-3 text-sm outline-none transition-colors focus:border-accent/50";
@@ -210,13 +208,11 @@ export default function RFQForm() {
   const canContinue =
     !parsed?.needsBuyerDestination &&
     (boqFile != null ||
-      (inputMode === "agent"
-        ? request.trim().length >= 3
-        : parsed?.product
+      (parsed?.product
+        ? request.trim().length >= 5
+        : parsed?.city || parsed?.country || parsed?.destination || parsed?.buyerCountry
           ? request.trim().length >= 5
-          : parsed?.city || parsed?.country || parsed?.destination || parsed?.buyerCountry
-            ? request.trim().length >= 5
-            : request.trim().length >= 15));
+          : request.trim().length >= 15));
 
   function handlePlannerContinue(summary: string) {
     setRequest(summary);
@@ -365,9 +361,7 @@ export default function RFQForm() {
             {step === 1
               ? inputMode === "planner"
                 ? "List every product line — or upload your BOQ PDF below."
-                : inputMode === "agent"
-                  ? "Answer a few quick questions — your RFQ Score updates as you go."
-                  : "Describe your request or upload a BOQ PDF — no forms, no jargon."
+                : "Describe your request or upload a BOQ PDF — no forms, no jargon."
               : "Where should we send your quote?"}
           </p>
         </div>
@@ -384,7 +378,7 @@ export default function RFQForm() {
               <button
                 type="button"
                 onClick={() => setInputMode("text")}
-                className={`flex-1 rounded-lg px-3 py-2.5 text-xs sm:text-sm font-medium transition-colors ${
+                className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
                   inputMode === "text"
                     ? "bg-accent/15 text-accent-light"
                     : "text-muted hover:text-foreground"
@@ -394,31 +388,14 @@ export default function RFQForm() {
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  if (inputMode !== "agent") {
-                    setRequest("");
-                    setParsed(null);
-                  }
-                  setInputMode("agent");
-                }}
-                className={`flex-1 rounded-lg px-3 py-2.5 text-xs sm:text-sm font-medium transition-colors ${
-                  inputMode === "agent"
-                    ? "bg-accent/15 text-accent-light"
-                    : "text-muted hover:text-foreground"
-                }`}
-              >
-                AI guide
-              </button>
-              <button
-                type="button"
                 onClick={() => setInputMode("planner")}
-                className={`flex-1 rounded-lg px-3 py-2.5 text-xs sm:text-sm font-medium transition-colors ${
+                className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
                   inputMode === "planner"
                     ? "bg-accent/15 text-accent-light"
                     : "text-muted hover:text-foreground"
                 }`}
               >
-                Multi-product
+                Multi-product RFQ
               </button>
             </div>
 
@@ -431,13 +408,6 @@ export default function RFQForm() {
 
             {inputMode === "planner" ? (
               <ContainerPlanner onContinue={handlePlannerContinue} />
-            ) : inputMode === "agent" ? (
-              <RfqAgentChat
-                onRequestChange={setRequest}
-                parsed={parsed}
-                onContinue={() => setStep(2)}
-                canContinue={canContinue}
-              />
             ) : (
               <>
             <RfqWritingGuide />
