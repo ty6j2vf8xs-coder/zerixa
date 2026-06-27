@@ -16,6 +16,7 @@ import {
 } from "@/lib/parseRfq";
 import ContainerPlanner from "@/components/buyers/ContainerPlanner";
 import RfqScorePanel, { RfqWritingGuide } from "@/components/buyers/RfqScorePanel";
+import { scoreRfq } from "@/lib/rfq-score";
 
 type Step = 1 | 2;
 type InputMode = "text" | "planner";
@@ -84,6 +85,7 @@ export default function RFQForm() {
   const [inputMode, setInputMode] = useState<InputMode>("text");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [request, setRequest] = useState("");
   const [parsed, setParsed] = useState<ParsedRfq | null>(null);
   const [showDetails, setShowDetails] = useState(false);
@@ -134,9 +136,41 @@ export default function RFQForm() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    setLoading(false);
-    setSubmitted(true);
+    setSubmitError("");
+
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const score = scoreRfq(parsed, request);
+
+    try {
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.get("email"),
+          name: formData.get("name"),
+          company: formData.get("company"),
+          request,
+          country,
+          delivery,
+          payment,
+          parsed,
+          rfqScore: score.score,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = (await res.json().catch(() => null)) as { error?: string } | null;
+        setSubmitError(data?.error ?? "Could not send your request. Please try again.");
+        return;
+      }
+
+      setSubmitted(true);
+    } catch {
+      setSubmitError("Network error. Check your connection and try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   if (submitted) {
@@ -452,6 +486,10 @@ export default function RFQForm() {
                 {loading ? "Sending…" : "Get My Free Quote"}
               </button>
             </div>
+
+            {submitError && (
+              <p className="text-center text-sm text-red-400">{submitError}</p>
+            )}
 
             <p className="text-center text-xs text-muted">
               No commitment · Formal quote within 24 hours
