@@ -81,6 +81,89 @@ function ParsedAiChips({ parsed }: { parsed: ParsedRfq }) {
   );
 }
 
+function BoqUploadField({
+  boqFile,
+  boqError,
+  onSelect,
+  compact = false,
+}: {
+  boqFile: File | null;
+  boqError: string;
+  onSelect: (file: File | null) => void;
+  compact?: boolean;
+}) {
+  return (
+    <div>
+      <label htmlFor="boq" className="mb-1.5 block text-sm font-medium">
+        BOQ / Bill of Quantities{" "}
+        <span className="text-muted font-normal">(optional PDF)</span>
+      </label>
+      <div
+        className={`rounded-xl border border-dashed bg-background ${
+          compact ? "border-accent/25 bg-accent/5 p-3" : "border-border p-4"
+        }`}
+      >
+        {boqFile ? (
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium">{boqFile.name}</p>
+              <p className="text-xs text-muted">
+                {(boqFile.size / (1024 * 1024)).toFixed(1)} MB · PDF attached
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => onSelect(null)}
+              className="shrink-0 text-xs text-muted hover:text-foreground"
+            >
+              Remove
+            </button>
+          </div>
+        ) : (
+          <>
+            <input
+              id="boq"
+              name="boq"
+              type="file"
+              accept="application/pdf,.pdf"
+              className="sr-only"
+              onChange={(e) => onSelect(e.target.files?.[0] ?? null)}
+            />
+            <label
+              htmlFor="boq"
+              className={`group flex cursor-pointer items-center gap-3 ${
+                compact ? "py-1" : "flex-col py-2 text-center"
+              }`}
+            >
+              <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-accent/30 bg-accent/10 text-accent-light">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+                  />
+                </svg>
+              </span>
+              <span className={compact ? "min-w-0 text-left" : ""}>
+                <span className="block text-sm font-medium text-foreground">
+                  {compact ? "Have a BOQ? Upload your PDF" : "Choose PDF"}
+                </span>
+                <span className="block text-xs text-muted">Max 20 MB · stored securely</span>
+              </span>
+              {compact && (
+                <span className="ml-auto shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors group-hover:border-accent/40">
+                  Browse
+                </span>
+              )}
+            </label>
+          </>
+        )}
+      </div>
+      {boqError && <p className="mt-2 text-xs text-red-400">{boqError}</p>}
+    </div>
+  );
+}
+
 export default function RFQForm() {
   const [step, setStep] = useState<Step>(1);
   const [inputMode, setInputMode] = useState<InputMode>("text");
@@ -124,11 +207,12 @@ export default function RFQForm() {
 
   const canContinue =
     !parsed?.needsBuyerDestination &&
-    (parsed?.product
-      ? request.trim().length >= 5
-      : parsed?.city || parsed?.country || parsed?.destination || parsed?.buyerCountry
+    (boqFile != null ||
+      (parsed?.product
         ? request.trim().length >= 5
-        : request.trim().length >= 15);
+        : parsed?.city || parsed?.country || parsed?.destination || parsed?.buyerCountry
+          ? request.trim().length >= 5
+          : request.trim().length >= 15));
 
   function handlePlannerContinue(summary: string) {
     setRequest(summary);
@@ -211,7 +295,7 @@ export default function RFQForm() {
           email: formData.get("email"),
           name: formData.get("name"),
           company: formData.get("company"),
-          request,
+          request: request.trim() || (boqFile ? "See attached BOQ (PDF)." : ""),
           country,
           delivery,
           payment,
@@ -276,8 +360,8 @@ export default function RFQForm() {
           <p className="mt-4 text-muted">
             {step === 1
               ? inputMode === "planner"
-                ? "List every product line — we'll build one consolidated request."
-                : "Just describe it — no forms, no jargon."
+                ? "List every product line — or upload your BOQ PDF below."
+                : "Describe your request or upload a BOQ PDF — no forms, no jargon."
               : "Where should we send your quote?"}
           </p>
         </div>
@@ -314,6 +398,13 @@ export default function RFQForm() {
                 Multi-product RFQ
               </button>
             </div>
+
+            <BoqUploadField
+              boqFile={boqFile}
+              boqError={boqError}
+              onSelect={handleBoqSelect}
+              compact
+            />
 
             {inputMode === "planner" ? (
               <ContainerPlanner onContinue={handlePlannerContinue} />
@@ -372,11 +463,11 @@ export default function RFQForm() {
               Continue
             </button>
 
-            {!canContinue && request.length > 0 && (
+            {!canContinue && request.length > 0 && !boqFile && (
               <p className="text-center text-xs text-muted">
                 {parsed?.needsBuyerDestination
                   ? "EXW/FOB with a Turkish port — add your country (e.g. buyer in Libya)"
-                  : "Add product, quantity, or destination to continue"}
+                  : "Add product, quantity, destination, or attach a BOQ PDF to continue"}
               </p>
             )}
               </>
@@ -387,7 +478,9 @@ export default function RFQForm() {
             {/* Request summary */}
             <div className="rounded-2xl border border-border bg-background p-4">
               <div className="flex items-start justify-between gap-3">
-                <p className="text-sm text-muted line-clamp-2">{request}</p>
+                <p className="text-sm text-muted line-clamp-2">
+                  {request.trim() || (boqFile ? "BOQ attached — see PDF below." : "")}
+                </p>
                 <button
                   type="button"
                   onClick={() => setStep(1)}
@@ -396,6 +489,11 @@ export default function RFQForm() {
                   Edit
                 </button>
               </div>
+              {boqFile && (
+                <p className="mt-2 text-xs text-accent-light">
+                  Attached: {boqFile.name}
+                </p>
+              )}
               {parsed && parsed.fieldCount > 0 && (
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   <ParsedAiChips parsed={parsed} />
@@ -443,52 +541,6 @@ export default function RFQForm() {
                   className="w-full rounded-xl border border-border bg-background px-4 py-3.5 text-sm outline-none transition-colors focus:border-accent/50"
                 />
               </div>
-            </div>
-
-            <div>
-              <label htmlFor="boq" className="mb-1.5 block text-sm font-medium">
-                BOQ / Bill of Quantities <span className="text-muted font-normal">(optional PDF)</span>
-              </label>
-              <div className="rounded-xl border border-dashed border-border bg-background p-4">
-                {boqFile ? (
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">{boqFile.name}</p>
-                      <p className="text-xs text-muted">
-                        {(boqFile.size / (1024 * 1024)).toFixed(1)} MB · PDF
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleBoqSelect(null)}
-                      className="shrink-0 text-xs text-muted hover:text-foreground"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    <input
-                      id="boq"
-                      name="boq"
-                      type="file"
-                      accept="application/pdf,.pdf"
-                      className="sr-only"
-                      onChange={(e) => handleBoqSelect(e.target.files?.[0] ?? null)}
-                    />
-                    <label
-                      htmlFor="boq"
-                      className="flex cursor-pointer flex-col items-center gap-2 py-2 text-center"
-                    >
-                      <span className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:border-accent/40 hover:text-foreground">
-                        Choose PDF
-                      </span>
-                      <span className="text-xs text-muted">Max 20 MB · stored securely</span>
-                    </label>
-                  </>
-                )}
-              </div>
-              {boqError && <p className="mt-2 text-xs text-red-400">{boqError}</p>}
             </div>
 
             {/* Collapsible details — only if user wants to refine */}
