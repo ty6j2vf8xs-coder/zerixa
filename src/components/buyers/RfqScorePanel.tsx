@@ -94,11 +94,11 @@ export function RfqWritingGuide() {
       <p className="mt-3 text-xs text-muted leading-relaxed">
         One sentence is enough — e.g.{" "}
         <span className="text-foreground/80">
-          &ldquo;500 tons cement CEM I 42.5R, CIF Tripoli, wire transfer&rdquo;
+          &ldquo;Porcelain Tiles 1400 sqm CFR Hamburg, Germany, TT Payment&rdquo;
         </span>
         {" "}or for FOB/EXW:{" "}
         <span className="text-foreground/80">
-          &ldquo;FOB Mersin, buyer in Libya&rdquo;
+          &ldquo;FOB İzmir, buyer in Germany&rdquo;
         </span>
       </p>
     </div>
