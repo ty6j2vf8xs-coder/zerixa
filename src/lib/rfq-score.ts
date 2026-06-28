@@ -74,7 +74,7 @@ export function scoreRfq(parsed: ParsedRfq | null, text: string): RfqScore {
       id: "quantity",
       label: "Quantity",
       tip: "Add amount and unit",
-      example: "500 tons, 2,000 m², 40 containers",
+      example: "500 tons, 2,000 m², 3,200 sq ft, 40 containers",
       points: 25,
       met: Boolean(parsed?.quantity),
     },

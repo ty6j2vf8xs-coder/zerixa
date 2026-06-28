@@ -296,12 +296,44 @@ function extractLocations(text: string): {
 const QUANTITY_UNIT_ALIASES =
   "(?:metric\\s+)?(?:tons?|tonnes?|tonne|ton|mt\\.?|metric\\s+tons?)";
 const KG_ALIASES = "(?:kg|kgs|kilograms?|kilogrammes?)";
-const AREA_ALIASES = "(?:m²|m2|sq\\.?\\s*m(?:eters?|etres?)?|sqm|square\\s+meters?|square\\s+metres?|metrekare)";
-const VOLUME_ALIASES = "(?:m³|m3|cbm|cum|cu\\.?\\s*m(?:eters?|etres?)?|cubic\\s+meters?|cubic\\s+metres?|metreküp)";
+const METRIC_AREA_ALIASES =
+  "(?:m²|m2|sq\\.?\\s*m(?:eters?|etres?)?|sqm|square\\s+meters?|square\\s+metres?|metrekare)";
+const IMPERIAL_AREA_ALIASES =
+  "(?:ft²|ft2|sq\\.?\\s*ft\\.?|sqft|square\\s+feet|square\\s+foot)";
+const AREA_ALIASES = `(?:${METRIC_AREA_ALIASES}|${IMPERIAL_AREA_ALIASES})`;
+const METRIC_VOLUME_ALIASES =
+  "(?:m³|m3|cbm|cum|cu\\.?\\s*m(?:eters?|etres?)?|cubic\\s+meters?|cubic\\s+metres?|metreküp)";
+const IMPERIAL_VOLUME_ALIASES =
+  "(?:ft³|ft3|cu\\.?\\s*ft\\.?|cuft|cubic\\s+feet|cubic\\s+foot)";
+const VOLUME_ALIASES = `(?:${METRIC_VOLUME_ALIASES}|${IMPERIAL_VOLUME_ALIASES})`;
 const COUNT_ALIASES =
   "(?:pieces?|pcs?\\.?|units?|items?|sets?|lots?|adet|birim)";
 const PACK_ALIASES = "(?:pallets?|plts?\\.?|slabs?|sheets?|bags?|big\\s+bags?|sacks?|bundles?|rolls?|boxes?|crates?)";
 const CONTAINER_ALIASES = "(?:containers?|fcl|lcl|teu)";
+
+/** Shared alternation for strip/prefix regexes (metric + imperial + legacy tokens). */
+const QUANTITY_UNIT_PATTERN = [
+  QUANTITY_UNIT_ALIASES,
+  KG_ALIASES,
+  AREA_ALIASES,
+  VOLUME_ALIASES,
+  COUNT_ALIASES,
+  PACK_ALIASES,
+  CONTAINER_ALIASES,
+  "MT",
+  "m2",
+  "m²",
+  "sqm",
+  "m3",
+  "m³",
+  "cbm",
+  "ft2",
+  "ft²",
+  "sqft",
+  "ft3",
+  "ft³",
+  "cuft",
+].join("|");
 
 type QuantityMatch = { raw: string; normalized: string; index: number };
 
@@ -311,7 +343,11 @@ function formatQuantityNumber(value: string): string {
 
 /** Superscript units break JS \\b — normalize before quantity regexes. */
 function normalizeQuantityInput(text: string): string {
-  return text.replace(/m²/gi, "m2").replace(/m³/gi, "m3");
+  return text
+    .replace(/m²/gi, "m2")
+    .replace(/m³/gi, "m3")
+    .replace(/ft²/gi, "ft2")
+    .replace(/ft³/gi, "ft3");
 }
 
 function stripQuantityPhrases(text: string): string {
@@ -319,7 +355,7 @@ function stripQuantityPhrases(text: string): string {
   return normalized
     .replace(
       new RegExp(
-        `\\d[\\d,.\\s]*\\s*(?:${QUANTITY_UNIT_ALIASES}|${KG_ALIASES}|${AREA_ALIASES}|${VOLUME_ALIASES}|${COUNT_ALIASES}|${PACK_ALIASES}|${CONTAINER_ALIASES}|m2|m3|sqm)\\b`,
+        `\\d[\\d,.\\s]*\\s*(?:${QUANTITY_UNIT_PATTERN})\\b`,
         "gi",
       ),
       "",
@@ -352,7 +388,7 @@ function extractQuantities(text: string): QuantityMatch[] {
       normalize: (m) => `${formatQuantityNumber(m[1])} kg`,
     },
     {
-      regex: new RegExp(`(\\d[\\d,.]*)\\s*${AREA_ALIASES}\\b`, "gi"),
+      regex: new RegExp(`(\\d[\\d,.]*)\\s*${METRIC_AREA_ALIASES}\\b`, "gi"),
       normalize: (m) => `${formatQuantityNumber(m[1])} m²`,
     },
     {
@@ -360,12 +396,32 @@ function extractQuantities(text: string): QuantityMatch[] {
       normalize: (m) => `${formatQuantityNumber(m[1])} m²`,
     },
     {
-      regex: new RegExp(`(\\d[\\d,.]*)\\s*${VOLUME_ALIASES}\\b`, "gi"),
+      regex: new RegExp(`(\\d[\\d,.]*)\\s*${IMPERIAL_AREA_ALIASES}\\b`, "gi"),
+      normalize: (m) => `${formatQuantityNumber(m[1])} ft²`,
+    },
+    {
+      regex: /(\d[\d,.]*)(?:ft2|ft²|sqft)\b/gi,
+      normalize: (m) => `${formatQuantityNumber(m[1])} ft²`,
+    },
+    {
+      regex: /(\d[\d,.]*)\s+sf\b/gi,
+      normalize: (m) => `${formatQuantityNumber(m[1])} ft²`,
+    },
+    {
+      regex: new RegExp(`(\\d[\\d,.]*)\\s*${METRIC_VOLUME_ALIASES}\\b`, "gi"),
       normalize: (m) => `${formatQuantityNumber(m[1])} m³`,
     },
     {
       regex: /(\d[\d,.]*)(?:m3|m³|cbm)\b/gi,
       normalize: (m) => `${formatQuantityNumber(m[1])} m³`,
+    },
+    {
+      regex: new RegExp(`(\\d[\\d,.]*)\\s*${IMPERIAL_VOLUME_ALIASES}\\b`, "gi"),
+      normalize: (m) => `${formatQuantityNumber(m[1])} ft³`,
+    },
+    {
+      regex: /(\d[\d,.]*)(?:ft3|ft³|cuft)\b/gi,
+      normalize: (m) => `${formatQuantityNumber(m[1])} ft³`,
     },
     {
       regex: new RegExp(`(\\d[\\d,.]*)\\s*${COUNT_ALIASES}\\b`, "gi"),
@@ -550,7 +606,7 @@ function extractPayment(text: string): ParsedRfq["payment"] | null {
 }
 
 const QUANTITY_PREFIX_PATTERN = new RegExp(
-  `^\\d[\\d,.\\s]*\\s*(?:${QUANTITY_UNIT_ALIASES}|${KG_ALIASES}|${AREA_ALIASES}|${VOLUME_ALIASES}|${COUNT_ALIASES}|${PACK_ALIASES}|${CONTAINER_ALIASES}|MT|m2|m²|sqm|m3|m³|cbm)(?:\\s+of|\\s+adet)?\\s*`,
+  `^\\d[\\d,.\\s]*\\s*(?:${QUANTITY_UNIT_PATTERN}|sf)(?:\\s+of|\\s+adet)?\\s*`,
   "i",
 );
 
@@ -716,6 +772,7 @@ export function parseRfq(text: string): ParsedRfq {
 export const RFQ_EXAMPLES = [
   "500 tons Portland cement CEM I 42.5R bagged, CIF Tripoli, wire transfer",
   "2000 sqm marble slabs 2cm thick, CIF Dubai, TT payment",
+  "Porcelain floor tiles 3,200 sq ft, CIF Lagos, TT payment",
   "Aluminum windows and doors, DDP Germany, bank transfer",
   "Facade cladding panels 1500 m², FOB Mersin, buyer in Libya, SWIFT transfer",
 ];
