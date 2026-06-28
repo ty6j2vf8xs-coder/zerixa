@@ -1,5 +1,6 @@
 import { RFQ_PRODUCT_PATTERNS } from "@/lib/product-catalog";
 import { matchCountryFromText, type CountryOption } from "@/lib/countries";
+import { fuzzyMatchProduct, normalizeRfqInput } from "@/lib/rfq-typo-fix";
 
 export const DELIVERY_OPTIONS = ["EXW", "FOB", "CIF", "CFR", "DDP"] as const;
 export type Incoterm = (typeof DELIVERY_OPTIONS)[number];
@@ -660,7 +661,7 @@ export function parseRfq(text: string): ParsedRfq {
     fieldCount: 0,
   };
 
-  const trimmed = text.trim();
+  const trimmed = normalizeRfqInput(text.trim());
   if (!trimmed || trimmed.length < 5) return empty;
 
   let product: string | null = null;
@@ -671,6 +672,14 @@ export function parseRfq(text: string): ParsedRfq {
       product = p;
       category = c;
       break;
+    }
+  }
+
+  if (!product) {
+    const fuzzy = fuzzyMatchProduct(trimmed);
+    if (fuzzy) {
+      product = fuzzy.product;
+      category = fuzzy.category;
     }
   }
 
