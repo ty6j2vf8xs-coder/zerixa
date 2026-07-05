@@ -18,8 +18,7 @@ export default function MarketsReach() {
             <span className="text-gradient">{GLOBAL_MARKET_STATS.label} countries</span>
           </h2>
           <p className="mt-4 text-muted leading-relaxed md:text-lg">
-            From Mersin and İskenderun to ports worldwide — one RFQ, one partner, full export
-            execution from Türkiye.
+            From Türkiye to ports worldwide — one RFQ, one partner, full export execution.
           </p>
         </div>
 

@@ -19,8 +19,8 @@ export const metadata: Metadata = {
     "AI-powered procurement from verified Turkish manufacturers. One quote, one contract, one delivery. Cement, steel, ceramics, insulation — EXW to DDP.",
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "48x48" },
       { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "48x48" },
     ],
     apple: "/apple-icon.png",
   },

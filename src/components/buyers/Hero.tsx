@@ -10,7 +10,7 @@ export default function BuyerHero() {
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
           </span>
-          Leading global export hub · Structural · Finishes · Raw materials
+          AI-powered procurement · Verified supply · Full export execution
         </div>
 
         <h1 className="max-w-4xl text-4xl font-bold leading-tight tracking-tight md:text-6xl md:leading-[1.1]">
