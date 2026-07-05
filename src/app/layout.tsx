@@ -17,13 +17,6 @@ export const metadata: Metadata = {
   title: "Zerixa — Source Construction Materials from Türkiye",
   description:
     "AI-powered procurement from verified Turkish manufacturers. One quote, one contract, one delivery. Cement, steel, ceramics, insulation — EXW to DDP.",
-  icons: {
-    icon: [
-      { url: "/icon.svg", type: "image/svg+xml" },
-      { url: "/favicon.ico", sizes: "48x48" },
-    ],
-    apple: "/apple-icon.png",
-  },
   keywords: [
     "Türkiye construction materials",
     "import from Türkiye",
