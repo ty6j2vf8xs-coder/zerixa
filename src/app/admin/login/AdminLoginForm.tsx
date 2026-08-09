@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 export default function AdminLoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -19,16 +18,17 @@ export default function AdminLoginForm() {
       const res = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ password }),
       });
       if (!res.ok) {
-        const data = (await res.json()) as { error?: string };
-        setError(data.error ?? "Login failed.");
+        const data = (await res.json().catch(() => null)) as { error?: string } | null;
+        setError(data?.error ?? "Login failed.");
         return;
       }
       const next = searchParams.get("next") || "/admin/leads";
-      router.push(next);
-      router.refresh();
+      // Full navigation so the httpOnly session cookie is sent on the next request.
+      window.location.assign(next);
     } catch {
       setError("Network error. Try again.");
     } finally {

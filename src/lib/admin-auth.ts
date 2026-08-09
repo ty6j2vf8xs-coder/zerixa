@@ -4,19 +4,23 @@ import { cookies } from "next/headers";
 export const ADMIN_SESSION_COOKIE = "zerixa_admin_session";
 
 function getSessionSecret(): string | null {
-  return process.env.ADMIN_SESSION_SECRET ?? null;
+  const secret = process.env.ADMIN_SESSION_SECRET?.trim();
+  return secret || null;
 }
 
 export function isAdminPasswordConfigured(): boolean {
-  return Boolean(process.env.ADMIN_PASSWORD && getSessionSecret());
+  return Boolean(process.env.ADMIN_PASSWORD?.trim() && getSessionSecret());
 }
 
 export function verifyAdminPassword(password: string): boolean {
-  const expected = process.env.ADMIN_PASSWORD;
-  if (!expected) return false;
-  if (password.length !== expected.length) return false;
+  const expected = process.env.ADMIN_PASSWORD?.trim();
+  const provided = password.trim();
+  if (!expected || !provided) return false;
+  const expectedBuf = Buffer.from(expected, "utf8");
+  const providedBuf = Buffer.from(provided, "utf8");
+  if (providedBuf.length !== expectedBuf.length) return false;
   try {
-    return timingSafeEqual(Buffer.from(password), Buffer.from(expected));
+    return timingSafeEqual(providedBuf, expectedBuf);
   } catch {
     return false;
   }
