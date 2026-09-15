@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://zerixa.ai"),
   title: "Tiles, sanitaryware and profiles from Turkish factories | Zerixa",
   description:
-    "One container, one invoice, one shipment. Send your list or BOQ and get a CIF price within 24 hours — with the factory names included.",
+    "One container, one invoice, one shipment. Send your list or BOQ and get a fast CIF price — with the factory names included.",
   keywords: [
     "import building materials from Türkiye",
     "Turkish ceramic tiles export",
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Tiles, sanitaryware and profiles from Turkish factories",
     description:
-      "One container. One invoice. One shipment. A CIF price within 24 hours, factory names included.",
+      "One container. One invoice. One shipment. A fast CIF price, factory names included.",
     url: "https://zerixa.ai",
     siteName: "Zerixa",
     locale: "en_US",
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Tiles, sanitaryware and profiles from Turkish factories",
     description:
-      "One container. One invoice. One shipment. A CIF price within 24 hours.",
+      "One container. One invoice. One shipment. A fast CIF price from Turkish factories.",
   },
 };
 

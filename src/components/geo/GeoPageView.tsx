@@ -123,7 +123,7 @@ export default function GeoPageView({ page }: Props) {
           <div className="mt-14 rounded-2xl border border-accent/30 bg-surface-elevated p-8 text-center glow-amber">
             <h2 className="text-xl font-semibold">Get a verified quote</h2>
             <p className="mt-2 text-sm text-muted">
-              Describe what you need — quote within 24 hours. No membership fee.
+              Describe what you need — we come back quickly with a quote. No membership fee.
             </p>
             <Link
               href="/#request-quote"

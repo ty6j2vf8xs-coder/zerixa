@@ -50,8 +50,8 @@ const STEPS = [
     body: "Plain text, a photo of a spec sheet, or your BOQ. However you already write it.",
   },
   {
-    title: "One quote in 24 hours",
-    body: "CIF price, factory names, certificates, lead time — in a single document.",
+    title: "One consolidated quote",
+    body: "CIF price, factory names, certificates and lead time in a single document — usually back within one working day.",
   },
   {
     title: "We ship it",

@@ -193,8 +193,8 @@ export default function QuoteForm() {
         </div>
         <h3 className="mt-4 text-xl font-bold">Got it — we&apos;re on it.</h3>
         <p className="mt-2 leading-relaxed text-muted">
-          You&apos;ll have a price within 24 hours, with the factory names and
-          certificates included.
+          We&apos;ll come back with your price, the factory names and the
+          certificates — usually within one working day.
         </p>
         {waReady && (
           <a
@@ -386,7 +386,7 @@ export default function QuoteForm() {
       </button>
 
       <p className="mt-3 text-center text-xs text-muted">
-        No commitment. We reply within 24 hours with a price, lead time and the
+        No commitment. We come back quickly with a price, lead time and the
         factory names.
       </p>
     </form>

@@ -111,7 +111,7 @@ export default function ProductsHubView() {
           <div className="mt-16 rounded-xl border border-accent/20 bg-accent/5 p-8 text-center">
             <h2 className="text-lg font-semibold">Need a quote?</h2>
             <p className="mt-2 text-sm text-muted">
-              Describe your products, quantity, and destination — verified quote within 24 hours.
+              Describe your products, quantity, and destination — we come back quickly with a verified quote.
             </p>
             <Link
               href="/#request-quote"

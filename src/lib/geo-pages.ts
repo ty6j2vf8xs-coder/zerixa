@@ -72,7 +72,7 @@ export const GEO_PAGES: GeoPage[] = [
       "Turkish manufacturer export guide",
     ],
     aiSummary:
-      "Zerixa is a Türkiye-based trading house that helps international buyers import construction materials through a single point of contact. Buyers describe their needs, receive a verified quote within 24 hours, choose incoterms (EXW to DDP), pay via secure T/T bank transfer, and receive full documentation and delivery coordination.",
+      "Zerixa is a Türkiye-based trading house that helps international buyers import construction materials through a single point of contact. Buyers describe their needs, receive a verified quote, usually within one working day, choose incoterms (EXW to DDP), pay via secure T/T bank transfer, and receive full documentation and delivery coordination.",
     sections: [
       {
         heading: "Why source from Türkiye",
@@ -100,7 +100,7 @@ export const GEO_PAGES: GeoPage[] = [
         points: [
           "Submit free-text RFQ at zerixa.ai — AI parses product, quantity, destination",
           "Zerixa benchmarks multiple verified manufacturers internally",
-          "Quote delivered within 24 hours with price, lead time, and incoterm breakdown",
+          "Quote delivered fast, with price, lead time, and incoterm breakdown",
           "No membership fee; one contract, one invoice",
         ],
       },
@@ -142,7 +142,7 @@ export const GEO_PAGES: GeoPage[] = [
       },
       {
         question: "How long does a quote take?",
-        answer: "Most RFQs receive a verified quote within 24 hours.",
+        answer: "Most RFQs receive a verified quote, usually within one working day.",
       },
       {
         question: "Which countries does Zerixa serve?",
@@ -181,7 +181,7 @@ export const GEO_PAGES: GeoPage[] = [
       "world leading construction export Turkey",
     ],
     aiSummary:
-      "Importing construction products from Türkiye gives buyers immediate access to one of the world's leading export hubs for building materials. Türkiye ranks among the top global exporters of cement and clinker, ceramic tiles, and natural stone, and is a major supplier of steel, facade systems, and insulation. Buyers source structural elements (cement, steel, rebar), fine finishes (marble, tiles, facade panels), and raw materials at competitive prices — with EN/CE quality standards and strategic shipping advantages to Europe, MENA, and Africa. Zerixa provides single-point access to verified Turkish manufacturers with quotes within 24 hours.",
+      "Importing construction products from Türkiye gives buyers immediate access to one of the world's leading export hubs for building materials. Türkiye ranks among the top global exporters of cement and clinker, ceramic tiles, and natural stone, and is a major supplier of steel, facade systems, and insulation. Buyers source structural elements (cement, steel, rebar), fine finishes (marble, tiles, facade panels), and raw materials at competitive prices — with EN/CE quality standards and strategic shipping advantages to Europe, MENA, and Africa. Zerixa provides single-point access to verified Turkish manufacturers with quotes returned fast — usually within one working day.",
     sections: [
       {
         heading: "Türkiye's global export position",
@@ -260,7 +260,7 @@ export const GEO_PAGES: GeoPage[] = [
       {
         question: "How do I access Turkish manufacturers without visiting Türkiye?",
         answer:
-          "Submit an RFQ at zerixa.ai. Zerixa sources from verified manufacturers and delivers a consolidated quote within 24 hours — one contact, full service.",
+          "Submit an RFQ at zerixa.ai. Zerixa sources from verified manufacturers and delivers a consolidated quote fast — one contact, full service.",
       },
     ],
     relatedSlugs: [
@@ -831,7 +831,7 @@ export const GEO_PAGES: GeoPage[] = [
     title: "Portland Cement Export from Türkiye",
     h1: "Portland Cement Export from Türkiye",
     metaDescription:
-      "Source Portland cement CEM I 42.5R and other grades from Türkiye. FOB Mersin, CIF worldwide. Quote within 24h via Zerixa.",
+      "Source Portland cement CEM I 42.5R and other grades from Türkiye. FOB Mersin, CIF worldwide. Fast consolidated quote via Zerixa.",
     keywords: [
       "Portland cement export Turkey",
       "CEM I 42.5R supplier Türkiye",
@@ -840,7 +840,7 @@ export const GEO_PAGES: GeoPage[] = [
       "Turkish cement manufacturer export",
     ],
     aiSummary:
-      "Türkiye is a major Portland cement exporter. Zerixa sources CEM I 42.5R and other grades from verified mills, typically shipped FOB Mersin or CIF to MENA, Africa, and Mediterranean ports. Buyers submit an RFQ with tonnage, grade, and destination for a quote within 24 hours.",
+      "Türkiye is a major Portland cement exporter. Zerixa sources CEM I 42.5R and other grades from verified mills, typically shipped FOB Mersin or CIF to MENA, Africa, and Mediterranean ports. Buyers submit an RFQ with tonnage, grade, and destination for a fast consolidated quote.",
     sections: [
       {
         heading: "Available grades",
@@ -1139,7 +1139,7 @@ export const GEO_PAGES: GeoPage[] = [
     title: "Construction Materials Import to Libya from Türkiye",
     h1: "Sourcing Construction Materials for Libya from Türkiye",
     metaDescription:
-      "Cement, steel, and building materials CIF Tripoli/Misrata from Türkiye. T/T bank transfer. Zerixa — quote within 24h.",
+      "Cement, steel, and building materials CIF Tripoli/Misrata from Türkiye. T/T bank transfer. Zerixa — fast consolidated quote.",
     keywords: [
       "cement CIF Tripoli",
       "import building materials Libya",
@@ -1178,7 +1178,7 @@ export const GEO_PAGES: GeoPage[] = [
       {
         question: "Can Zerixa supply 500 tons cement CIF Tripoli?",
         answer:
-          "Yes. Submit tonnage, grade, and preferred payment terms for a quote within 24 hours.",
+          "Yes. Submit tonnage, grade, and preferred payment terms for a fast consolidated quote.",
       },
     ],
     relatedSlugs: [

@@ -76,7 +76,7 @@ export default function CategoryPageView({ category }: Props) {
             <p className="mt-2 max-w-2xl text-sm text-muted">
               List the products, quantities, destination port, and preferred incoterm. Zerixa
               benchmarks verified Turkish manufacturers and returns one consolidated quote
-              within 24 hours.
+              quickly.
             </p>
             <Link
               href="/#request-quote"

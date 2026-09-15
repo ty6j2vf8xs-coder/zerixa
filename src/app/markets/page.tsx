@@ -5,7 +5,7 @@ import { GLOBAL_MARKET_STATS } from "@/lib/markets";
 
 export const metadata: Metadata = {
   title: `${GEO_HUBS.market.title} | Zerixa`,
-  description: `Construction materials export from Türkiye to ${GLOBAL_MARKET_STATS.label} countries. Regional logistics, payment guides, and RFQ within 24h.`,
+  description: `Construction materials export from Türkiye to ${GLOBAL_MARKET_STATS.label} countries. Regional logistics, payment guides, and a fast consolidated quote.`,
 };
 
 export default function MarketsHub() {

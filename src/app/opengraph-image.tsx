@@ -52,7 +52,7 @@ export default function OgImage() {
         </div>
 
         <div style={{ marginTop: 40, fontSize: 26, color: "#94a3b8" }}>
-          CIF price within 24 hours — factory names included.
+          A fast CIF price — factory names included.
         </div>
       </div>
     ),

@@ -19,8 +19,9 @@ export default function V2Hero() {
             One container. One invoice. One shipment.
           </p>
           <p className="mt-5 max-w-md text-[15px] leading-relaxed text-muted">
-            Send us your list or your BOQ. Within 24 hours you get a CIF price,
-            the lead time, and the names of the factories we quoted.
+            Send us your list or your BOQ. You get back a CIF price, the lead time,
+            and the names of the factories we quoted — most requests are answered
+            within one working day.
           </p>
 
           {identityReady && (

@@ -10,3 +10,10 @@
 9 verbose logfile logs-max:10 dir:/Users/alperencavdar/Desktop/zerixa/200/.npm/_logs/2026-06-22T20_33_47_354Z-
 10 verbose logfile /Users/alperencavdar/Desktop/zerixa/200/.npm/_logs/2026-06-22T20_33_47_354Z-debug-0.log
 11 silly logfile done cleaning log files
+12 verbose cwd /Users/alperencavdar/Desktop/zerixa
+13 verbose os Darwin 25.5.0
+14 verbose node v24.7.0
+15 verbose npm  v11.5.1
+16 verbose exit 1
+17 verbose code 1
+18 error A complete log of this run can be found in: /Users/alperencavdar/Desktop/zerixa/200/.npm/_logs/2026-06-22T20_33_47_354Z-debug-0.log

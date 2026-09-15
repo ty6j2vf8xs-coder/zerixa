@@ -91,7 +91,7 @@ export default function RegionPageView({ region }: Props) {
             <h2 className="text-lg font-semibold">Quote for {region.shortTitle}</h2>
             <p className="mt-2 max-w-2xl text-sm text-muted">
               Describe your products, quantity, and destination. Zerixa coordinates export from
-              Türkiye with full documentation and delivery — quote within 24 hours.
+              Türkiye with full documentation and delivery — fast consolidated quote.
             </p>
             <Link
               href="/#request-quote"

@@ -20,7 +20,7 @@ export const COMPANY = {
   taxNumber: "3320731191",
   tradeRegistryNo: "122138-5",
   exportersAssociation:
-    "İstanbul Demir ve Demirdışı Metaller İhracatçıları Birliği — sicil no 83301",
+    "İstanbul Demir ve Demirdışı Metaller İhracatçıları Birliği — Registry No. 83301",
 
   /** Display format. */
   phone: "+90 542 472 38 92",
@@ -35,7 +35,7 @@ export const COMPANY = {
   founderPhotoUrl: "",
 
   /** Ports you actually ship from. Keep this honest and short. */
-  loadingPorts: ["İstanbul (Ambarlı)", "Mersin", "İzmir"],
+  loadingPorts: ["İstanbul (Ambarlı)", "İzmit (Kocaeli)", "Mersin", "İzmir"],
 } as const;
 
 /** A value is a placeholder while it still carries the angle brackets. */

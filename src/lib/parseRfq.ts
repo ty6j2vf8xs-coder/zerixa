@@ -734,7 +734,7 @@ export function parseRfq(text: string): ParsedRfq {
   if (/\bEUR\.?1\b/i.test(trimmed)) documents.push("EUR.1 Movement Certificate");
   if (/\bpacking\s+list\b/i.test(trimmed)) documents.push("Packing List");
 
-  const leadTime = product ? "Quote within 24h" : null;
+  const leadTime = product ? "Fast quote" : null;
 
   let fieldCount = 0;
   if (product) fieldCount++;

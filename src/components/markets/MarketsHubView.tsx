@@ -109,7 +109,7 @@ export default function MarketsHubView() {
             <h2 className="text-lg font-semibold">Your country not listed?</h2>
             <p className="mt-2 max-w-2xl text-sm text-muted">
               Zerixa exports to {GLOBAL_MARKET_STATS.label} countries. Name your destination port or
-              delivery address in the RFQ — we quote CIF, CFR, FOB, EXW, or DDP within 24 hours.
+              delivery address in the RFQ — we quote CIF, CFR, FOB, EXW, or DDP, and we come back quickly.
             </p>
             <Link
               href="/#request-quote"

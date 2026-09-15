@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     title: `${category.title} | Zerixa`,
-    description: `${category.description} Sourced from verified Turkish manufacturers — quote within 24h.`,
+    description: `${category.description} Sourced from verified Turkish manufacturers — fast consolidated quote.`,
     openGraph: {
       title: category.title,
       description: category.description,
