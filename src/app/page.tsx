@@ -1,35 +1,53 @@
-import BuyerHeader from "@/components/buyers/Header";
-import BuyerHero from "@/components/buyers/Hero";
-import BuyerHowItWorks from "@/components/buyers/HowItWorks";
-import AIFeatures from "@/components/buyers/AIFeatures";
-import ProductCategories from "@/components/buyers/ProductCategories";
-import ExportRankings from "@/components/buyers/ExportRankings";
-import MarketsReach from "@/components/buyers/MarketsReach";
-import ServicePackages from "@/components/buyers/ServicePackages";
-import WhyZerixa from "@/components/buyers/WhyZerixa";
-import BuyerTrust from "@/components/buyers/Trust";
-import ContainerPlannerPromo from "@/components/buyers/ContainerPlannerPromo";
-import RFQForm from "@/components/buyers/RFQForm";
-import BuyerFooter from "@/components/buyers/Footer";
+import V2Header from "@/components/v2/V2Header";
+import V2Hero from "@/components/v2/V2Hero";
+import { WhatWeSource, HowItWorks, WhyUs, WhoWeAre } from "@/components/v2/V2Sections";
+import V2Footer from "@/components/v2/V2Footer";
+import WhatsAppFab from "@/components/v2/WhatsAppFab";
+import { COMPANY, isPlaceholder } from "@/lib/v2-company";
+
+/**
+ * Real registration details in structured data: this is what lets Google — and
+ * a buyer's compliance check — tie the brand to a verifiable legal entity.
+ */
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: COMPANY.displayName,
+  legalName: COMPANY.legalName,
+  url: "https://zerixa.ai",
+  logo: "https://zerixa.ai/apple-icon.png",
+  description:
+    "Türkiye-based export desk for construction materials. Tiles, sanitaryware, aluminium profiles and finishing products, consolidated into one container and one invoice.",
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: COMPANY.addressLines[0],
+    addressLocality: "Maltepe",
+    addressRegion: "İstanbul",
+    addressCountry: "TR",
+  },
+  telephone: COMPANY.phone,
+  taxID: COMPANY.taxNumber,
+  ...(isPlaceholder(COMPANY.email) ? {} : { email: COMPANY.email }),
+  areaServed: "Worldwide",
+};
 
 export default function Home() {
   return (
     <>
-      <BuyerHeader />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+      />
+      <V2Header />
       <main className="flex-1">
-        <BuyerHero />
-        <BuyerHowItWorks />
-        <AIFeatures />
-        <ProductCategories />
-        <ExportRankings />
-        <MarketsReach />
-        <ServicePackages />
-        <WhyZerixa />
-        <BuyerTrust />
-        <ContainerPlannerPromo />
-        <RFQForm />
+        <V2Hero />
+        <WhatWeSource />
+        <HowItWorks />
+        <WhyUs />
+        <WhoWeAre />
       </main>
-      <BuyerFooter />
+      <V2Footer />
+      <WhatsAppFab />
     </>
   );
 }

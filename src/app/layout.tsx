@@ -14,25 +14,32 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Zerixa — Source Construction Materials from Türkiye",
+  metadataBase: new URL("https://zerixa.ai"),
+  title: "Tiles, sanitaryware and profiles from Turkish factories | Zerixa",
   description:
-    "AI-powered procurement from verified Turkish manufacturers. One quote, one contract, one delivery. Cement, steel, ceramics, insulation — EXW to DDP.",
+    "One container, one invoice, one shipment. Send your list or BOQ and get a CIF price within 24 hours — with the factory names included.",
   keywords: [
-    "Türkiye construction materials",
-    "import from Türkiye",
-    "cement export Türkiye",
-    "steel supplier Türkiye",
-    "B2B procurement",
-    "Turkish manufacturers",
+    "import building materials from Türkiye",
+    "Turkish ceramic tiles export",
+    "sanitaryware supplier Türkiye",
+    "aluminium profiles Türkiye export",
+    "construction materials Ghana Nigeria import",
+    "consolidated container building materials",
   ],
   openGraph: {
-    title: "Zerixa — Source Construction Materials from Türkiye",
+    title: "Tiles, sanitaryware and profiles from Turkish factories",
     description:
-      "Describe what you need. Get a verified quote from Türkiye within 24 hours. Full-service export — EXW, FOB, CIF, CFR, DDP.",
+      "One container. One invoice. One shipment. A CIF price within 24 hours, factory names included.",
     url: "https://zerixa.ai",
     siteName: "Zerixa",
     locale: "en_US",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Tiles, sanitaryware and profiles from Turkish factories",
+    description:
+      "One container. One invoice. One shipment. A CIF price within 24 hours.",
   },
 };
 

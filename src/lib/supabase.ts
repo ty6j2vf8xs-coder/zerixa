@@ -4,6 +4,7 @@ export type LeadRow = {
   id: string;
   created_at: string;
   email: string;
+  phone: string | null;
   name: string | null;
   company: string | null;
   request: string;
@@ -20,6 +21,7 @@ export type LeadRow = {
 
 export type LeadInsert = {
   email: string;
+  phone?: string | null;
   name?: string | null;
   company?: string | null;
   request: string;
