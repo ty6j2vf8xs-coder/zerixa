@@ -41,10 +41,18 @@ export default function OgImage() {
           <div style={{ fontSize: 34, fontWeight: 600 }}>zerixa.ai</div>
         </div>
 
-        <div style={{ marginTop: 48, fontSize: 62, fontWeight: 700, lineHeight: 1.12 }}>
-          Tiles, sanitaryware and profiles
-          <br />
-          from Turkish factories.
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            marginTop: 48,
+            fontSize: 62,
+            fontWeight: 700,
+            lineHeight: 1.12,
+          }}
+        >
+          <div>Tiles, sanitaryware and profiles</div>
+          <div>from Turkish factories.</div>
         </div>
 
         <div style={{ marginTop: 28, fontSize: 34, color: "#fbbf24" }}>
