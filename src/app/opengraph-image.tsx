@@ -60,7 +60,7 @@ export default function OgImage() {
         </div>
 
         <div style={{ marginTop: 40, fontSize: 26, color: "#94a3b8" }}>
-          A fast CIF price — factory names included.
+          A fast CIF price — specifications and certificates included.
         </div>
       </div>
     ),

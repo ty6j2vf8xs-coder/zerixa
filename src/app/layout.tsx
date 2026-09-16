@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://zerixa.ai"),
   title: "Tiles, sanitaryware and profiles from Turkish factories | Zerixa",
   description:
-    "One container, one invoice, one shipment. Send your list or BOQ and get a fast CIF price — with the factory names included.",
+    "One container, one invoice, one shipment. Send your list or BOQ and get a fast CIF price — specifications and certificates included.",
   keywords: [
     "import building materials from Türkiye",
     "Turkish ceramic tiles export",
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Tiles, sanitaryware and profiles from Turkish factories",
     description:
-      "One container. One invoice. One shipment. A fast CIF price, factory names included.",
+      "One container. One invoice. One shipment. A fast CIF price, specifications and certificates included.",
     url: "https://zerixa.ai",
     siteName: "Zerixa",
     locale: "en_US",

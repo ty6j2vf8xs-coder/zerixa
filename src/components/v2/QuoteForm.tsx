@@ -193,7 +193,7 @@ export default function QuoteForm() {
         </div>
         <h3 className="mt-4 text-xl font-bold">Got it — we&apos;re on it.</h3>
         <p className="mt-2 leading-relaxed text-muted">
-          We&apos;ll come back with your price, the factory names and the
+          We&apos;ll come back with your price, the specifications and the
           certificates — usually within one working day.
         </p>
         {waReady && (
@@ -386,8 +386,8 @@ export default function QuoteForm() {
       </button>
 
       <p className="mt-3 text-center text-xs text-muted">
-        No commitment. We come back quickly with a price, lead time and the
-        factory names.
+        No commitment. We come back quickly with a price, lead time and full
+        specifications.
       </p>
     </form>
   );

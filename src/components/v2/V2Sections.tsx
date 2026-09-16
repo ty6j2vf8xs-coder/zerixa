@@ -51,7 +51,7 @@ const STEPS = [
   },
   {
     title: "One consolidated quote",
-    body: "CIF price, factory names, certificates and lead time in a single document — usually back within one working day.",
+    body: "CIF price, specifications, certificates and lead time in a single document — usually back within one working day.",
   },
   {
     title: "We ship it",
@@ -93,7 +93,7 @@ const REASONS = [
   },
   {
     title: "Transparency",
-    body: "We name the factories in the quote. And we will arrange SGS or Bureau Veritas inspection before loading if you want it — at your cost, on your instruction.",
+    body: "A line-by-line quote: specification, packing, quantity per container and lead time for every item. And we will arrange SGS or Bureau Veritas inspection before loading if you want it — at your cost, on your instruction.",
   },
 ];
 
